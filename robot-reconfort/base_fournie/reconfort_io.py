@@ -117,7 +117,7 @@ def position_valide(position:(int,int), dimensions:(int,int))->bool:
         
     Returns :
         True ssi position est valide (c'est à dire chaque coordonnée est comprise entre 0 et la taille de la carte)"""
-    return 0 < position[0] < dimensions[0] and 0 < position[1] < dimensions[1]
+    return 0 <= position[0] < dimensions[0] and 0 < position[1] < dimensions[1] #TODO vérifier si sur un mur ?
 
 
 def charger_carte(chemin: str | Path) -> Carte:
@@ -191,7 +191,7 @@ def charger_carte(chemin: str | Path) -> Carte:
         raise ErreurFormatJSON("Résidents introuvables", chemin)
     residents = {}
     for r in values["residents"]:
-        if "id" not in r or "nom" not in r or "position" not in r:
+        if "id" not in r or "nom" not in r or "posiDict[str, Any]tion" not in r:
             raise ErreurFormatJSON("Un résident est mal formatté",chemin)
         r_pos:tuple = tuple(r["position"])
         if len(r_pos) != 2 :
@@ -219,9 +219,26 @@ def charger_dictionnaire(chemin: str | Path) -> Dict[str, Any]:
     return _lire_json(chemin, "robot-reconfort/dictionnaire")
 
 
-def charger_armoire(chemin: str | Path) -> Dict[str, Any]:
-    """Charge un fichier armoire. Voir l'enonce, section 5.3."""
-    return _lire_json(chemin, "robot-reconfort/armoire")
+def charger_armoire(chemin: str | Path) -> Armoire:
+    """Charge un fichier carte. Voir l'enonce, section 5.3.
+    Args :
+        chemin : Chemin du fichier JSON à charger
+    
+    Returns :
+        Une instance de la classe Armoire pour représenter l'armoire chargée
+
+    Raises :
+        ErreurFormatJson : si le JSON n'est pas formatté correctement
+        """
+    values:Dict[str, Any] = _lire_json(chemin, "robot-reconfort/armoire")
+    if "casier_depart" not in values:
+        raise ErreurFormatJSON("position initiale du casier introuvable")
+    casier_depart:tuple = tuple(values["casier_depart"])
+    if len(casier_depart)!=2:
+        raise ErreurFormatJSON("position initiale du casier non conforme")
+    if not position_valide(casier_depart):
+        raise ErreurFormatJSON("position initiale du casier hors de la carte")
+    armoire:Armoire
 
 
 def charger_scenario(chemin: str | Path) -> Dict[str, Any]:
@@ -247,7 +264,7 @@ def charger_scenario(chemin: str | Path) -> Dict[str, Any]:
     # on va chercher le fichier correspondant et on désérialise
     # chemin_armoire = "armoires/" + scenario_donnees["armoire"] + ".json"
     # armoire = Armoire._from_json(chemin_armoire)
-    armoire = Carger_armoire["armoire"]  # provisoire : juste le nom en string pour l'instant
+    armoire = charger_armoire["armoire"]  # provisoire : juste le nom en string pour l'instant
 
     demandes = [
         (d["resident"], d["message"])
