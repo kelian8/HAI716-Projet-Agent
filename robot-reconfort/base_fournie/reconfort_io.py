@@ -241,13 +241,13 @@ def charger_scenario(chemin: str | Path) -> Dict[str, Any]:
     # La carte est désérialisée à partir de son propre fichier,
     # construit à partir du nom donné dans le scénario
     chemin_carte = "cartes/" + scenario_donnees["carte"] + ".json"
-    carte = charger_carte(chemin_carte)
+    carte:Carte = charger_carte(chemin_carte)
 
     # Idem à terme pour l'armoire : le scénario ne stocke qu'un nom,
     # on va chercher le fichier correspondant et on désérialise
     # chemin_armoire = "armoires/" + scenario_donnees["armoire"] + ".json"
     # armoire = Armoire._from_json(chemin_armoire)
-    armoire = scenario_donnees["armoire"]  # provisoire : juste le nom en string pour l'instant
+    armoire = Carger_armoire["armoire"]  # provisoire : juste le nom en string pour l'instant
 
     demandes = [
         (d["resident"], d["message"])

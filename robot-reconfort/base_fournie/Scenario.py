@@ -5,8 +5,8 @@ from Carte import Carte
 
 class Scenario:
     def __init__(self, nom, carte, armoire, demandes):
-        self.nom = nom
-        self.carte = carte
+        self.nom:str = nom
+        self.carte:Carte = carte
         self.armoire = armoire
         self.demandes = demandes
 
