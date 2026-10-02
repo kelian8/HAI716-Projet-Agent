@@ -3,9 +3,9 @@ class Armoire:
         self.current_casier = depart
         self.casiers = []
         for row in range(3):
-            casier.append([])
+            self.casiers.append([])
             for col in range(8):
-                casier[row].append("")
+                self.casiers[row].append(-1)
 
-    def add_objet(intensite:int,emotion:int,objet:str):
-        casiers[intensite][emotion] = objet
+    def add_objet(self,intensite_row:int,emotion_col:int,objet:str):
+        self.casiers[intensite_row][emotion_col] = objet
