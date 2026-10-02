@@ -1,20 +1,34 @@
+from Carte import *
+
+
 class Robot:
 
-    position
-    carte
-    armoire_connue
-    objet_tenu
+    position : tuple
+    carte : Carte
+    #dictionnaire de dictionnaire key1 = emotion key1.x = intensité et valeur = liste dposition du ou des casier dans l'armoire 
+    #ne sert pas a grand chose pour l'instant si ce n'est savoir si un casier est eventuellement vide et si c'est le cas et qu'on a besoin de l'objet 
+    #correspondant, nous irons a un casier ayant uneemotion/intensite proche de celle recherchée initialement
+    armoire_connue : dict
+    objet_tenu : str | None 
+    current_demande : dict |None #demande qu'on traite actuellement
+    etat : xxx #etat actuel du robot (recherche x, cherche dans armoire, etc )
 
-    def __init__(self,position,taillecarte, carte, chemin):
-        self.position = position
+    def __init__(self,carte):
+        self.position = carte.depart_robot
         
-        #creer un objet carte pour le robot
-        self.carte = Carte(chemin)
+        #la carte donnée au robot lors de son initialisation dans "simulation", est une carte creer par simulation dont la grille a été remplacxe par une gerille
+        #"vierge" a l'execption des residents, l'armoire, et le dico 
+        self.carte = carte
+        self.armoire_connue= {}
+        self.objet_tenu=None
+        self.current_demande = None
+        self.etat = xxx #a remplacer 
 
-        #remplace la grille de l'objet carte par une grille inexplorée
-        self.carte.grille = [["." for j in range(taillecarte[0])] for i in range(taillecarte[1])]
         
-
+    """
+        inutile mais on garde au cas ou 
+        [["." for j in range(taillecarte[0])] for i in range(taillecarte[1])]
+    
         #boucle pour rentrer les bordures
         for j in carte.grille:
 
@@ -30,3 +44,5 @@ class Robot:
         #pour la position des residents
         for k in carte.residents : 
             pass
+"""
+
