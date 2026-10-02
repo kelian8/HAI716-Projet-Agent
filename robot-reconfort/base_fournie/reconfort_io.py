@@ -27,6 +27,10 @@ import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
+"""Import des classes pour chargement"""
+from Exceptions import ErreurFormatJSON
+from Carte import Carte
+
 __all__ = [
     "ErreurFichier",
     "charger_carte",
@@ -105,9 +109,108 @@ def _lire_json(chemin: str | Path, format_attendu: str) -> Dict[str, Any]:
 
     return donnees
 
+def position_valide(position:(int,int), dimensions:(int,int))->bool:
+    """Vérification de position dans la grille
+    Args :
+        position : paire d'entier représentant la position à vérifier
+        dimensions : la taille de la carte
+        
+    Returns :
+        True ssi position est valide (c'est à dire chaque coordonnée est comprise entre 0 et la taille de la carte)"""
+    return 0 < position[0] < dimensions[0] and 0 < position[1] < dimensions[1]
 
-def charger_carte(chemin: str | Path) -> Dict[str, Any]:
-    """Charge un fichier carte. Voir l'enonce, section 5.1."""
+
+def charger_carte(chemin: str | Path) -> Carte:
+    """Charge un fichier carte. Voir l'enonce, section 5.1.
+    Args :
+        chemin : Chemin du fichier JSON à charger
+    
+    Returns :
+        Une instance de la classe Carte pour représenter la carte chargée
+
+    Raises :
+        ErreurFormatJson : si le JSON n'est pas formatté correctement
+        """
+
+    values : Dict[str, Any] = _lire_json(chemin,"robot-reconfort/carte")
+
+    #Dimensions
+    if "dimensions" not in values :
+        raise ErreurFormatJSON("Dimensions introuvables", chemin)
+    if "hauteur" not in values["dimensions"] or "largeur" not in values["dimensions"] :
+        raise ErreurFormatJSON("Dimensions invalides")
+    dimensions = (values["dimensions"]["hauteur"],values["dimensions"]["largeur"])
+
+    #Grille :
+    if "grille" not in values:
+        raise ErreurFormatJson("Grille introuvable : ", chemin)
+    
+    grille = values["grille"]
+    for row in grille :
+        if len(row) != len(grille[0]) :
+            raise ErreurFormatJSON("Grille non rectangulaire", chemin)
+    
+    if len(grille) != dimensions[0] or any(len(ligne) != dimensions[1] for ligne in grille):
+        raise ErreurFormatJSON("Les dimensions de la grille ne respectent pas les dimensions données", chemin)
+
+
+    #Depart robot :
+    if "depart_robot" not in values:
+        raise ErreurFormatJson("Départ du robot introuvable : ", chemin)
+    depart_robot:tuple = tuple(values["depart_robot"])
+    if len(depart_robot) != 2 :
+        raise ErreurFormatJSON("Position du robot non conforme", chemin)
+    if not position_valide(depart_robot,dimensions):
+        raise ErreurFormatJSON("Le point de départ du robot n'est pas dans la carte")
+
+    #Position de l'armoire
+    if "armoire" not in values:
+        raise ErreurFormatJson("Armoire introuvable : ", chemin)
+    if "position" not in values["armoire"]:
+        raise ErreurFormatJson("Position de l'armoire introuvable : ", chemin)
+    armoire_pos:tuple = tuple(values["armoire"]["position"])
+    if len(armoire_pos) != 2 :
+        raise ErreurFormatJSON("Position de l'armoire non conforme", chemin)
+    if not position_valide(armoire_pos,dimensions):
+        raise ErreurFormatJSON("La position de l'armoire n'est pas dans la carte", chemin)
+
+    #Position du dictionnaire
+    if "dictionnaire" not in values:
+        raise ErreurFormatJson("Dictionnaire introuvable : ", chemin)
+    if "position" not in values["dictionnaire"]:
+        raise ErreurFormatJson("Position du dictionnaire introuvable : ", chemin)
+    dico_pos:tuple = tuple(values["dictionnaire"]["position"])
+    if len(dico_pos) != 2 :
+        raise ErreurFormatJSON("Position du dictionnaire non conforme", chemin)
+    if not position_valide(dico_pos,dimensions):
+        raise ErreurFormatJSON("La position de l'armoire n'est pas dans la carte", chemin)
+
+
+    #Résidents
+    if "residents" not in values:
+        raise ErreurFormatJSON("Résidents introuvables", chemin)
+    residents = {}
+    for r in values["residents"]:
+        if "id" not in r or "nom" not in r or "position" not in r:
+            raise ErreurFormatJSON("Un résident est mal formatté",chemin)
+        r_pos:tuple = tuple(r["position"])
+        if len(r_pos) != 2 :
+            raise ErreurFormatJSON("Position du résident "+ r["nom"] + " non conforme", chemin)
+        if not position_valide(r_pos,dimensions):
+            raise ErreurFormatJSON("La position du résident "+ r["nom"] + " pas dans la carte", chemin)
+        residents[r["id"]] = (r["nom"],r_pos)
+
+    return Carte(
+        dimensions = dimensions,
+        grille = grille,
+        depart_robot = depart_robot,
+        armoire_pos = armoire_pos,
+        dico_pos = dico_pos,
+        residents = residents
+    )
+
+
+
     return _lire_json(chemin, "robot-reconfort/carte")
 
 
@@ -122,8 +225,41 @@ def charger_armoire(chemin: str | Path) -> Dict[str, Any]:
 
 
 def charger_scenario(chemin: str | Path) -> Dict[str, Any]:
-    """Charge un fichier scenario. Voir l'enonce, section 5.4."""
-    return _lire_json(chemin, "robot-reconfort/scenario")
+    """Charge un fichier scenario. Voir l'enonce, section 5.1.
+    Args :
+        chemin : Chemin du fichier JSON à charger
+    
+    Returns :
+        Une instance de la classe Carte pour représenter la carte chargée
+
+    Raises :
+        ErreurFormatJson : si le JSON n'est pas formatté correctement
+        """
+
+    values :Dict[str, Any] = _lire_json(chemin, "robot-reconfort/scenario")
+
+    # La carte est désérialisée à partir de son propre fichier,
+    # construit à partir du nom donné dans le scénario
+    chemin_carte = "cartes/" + scenario_donnees["carte"] + ".json"
+    carte = charger_carte(chemin_carte)
+
+    # Idem à terme pour l'armoire : le scénario ne stocke qu'un nom,
+    # on va chercher le fichier correspondant et on désérialise
+    # chemin_armoire = "armoires/" + scenario_donnees["armoire"] + ".json"
+    # armoire = Armoire._from_json(chemin_armoire)
+    armoire = scenario_donnees["armoire"]  # provisoire : juste le nom en string pour l'instant
+
+    demandes = [
+        (d["resident"], d["message"])
+        for d in scenario_donnees["demandes"]
+    ]
+
+    return cls(
+        nom=scenario_donnees["nom"],
+        carte=carte,
+        armoire=armoire,
+        demandes=demandes,
+    )
 
 
 # ---------------------------------------------------------------------------

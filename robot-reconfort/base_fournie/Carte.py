@@ -12,6 +12,15 @@ class Carte:
 
     @classmethod
     def _from_json(cls,chemin):
+        """ Fonction qui vérifie la validité d'un fichier puis le charge en tant que Carte
+        Args : 
+            chemin : Chemin du fichier à charger
+        
+        Returns : 
+            une instance de la classe Carte représentant la carte chargée
+            
+        Raises :
+            TODO"""
         carte_donnees = rio.charger_carte(chemin)
 
         residents = {}
