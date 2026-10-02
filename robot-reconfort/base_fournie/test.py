@@ -1,9 +1,11 @@
 import Scenario as sc
-import Carte
+from Carte import Carte
+import reconfort_io as rio
+
 
 def main():
     print("hello world")
-    c = Carte.Carte._from_json("cartes/appartement_01.json")
+    c:Carte = rio.charger_carte("cartes/appartement_01.json")
     print(c.dimensions)      # (9, 13)
     print(c.grille[0])       # "#############"
     print(c.depart_robot)    # (6, 1)
