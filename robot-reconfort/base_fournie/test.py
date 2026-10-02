@@ -1,17 +1,19 @@
-import Scenario as sc
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+
+from Scenario import Scenario
 from Carte import Carte
 import reconfort_io as rio
 
 
 def main():
     print("hello world")
-    c:Carte = rio.charger_carte("cartes/appartement_01.json")
-    print(c.dimensions)      # (9, 13)
-    print(c.grille[0])       # "#############"
-    print(c.depart_robot)    # (6, 1)
-    print(c.armoire_pos)     # (6, 4)
-    print(c.dico_pos)        # (7, 6)
-    print(c.residents)       # {'R1': ('Camille', (6, 11)), 'R2': ('Hugo', (3, 3))}
+    s:Scenario = rio.charger_scenario("cartes/scenario_01.json")
+    d = rio.charger_dictionnaire("donnees/dictionnaire.json")
+    print(s)
+    print(d)
 
 if __name__ == "__main__":
     main()
