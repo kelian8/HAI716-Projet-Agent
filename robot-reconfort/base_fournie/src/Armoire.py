@@ -9,3 +9,6 @@ class Armoire:
 
     def add_objet(self,intensite_row:int,emotion_col:int,objet:str):
         self.casiers[intensite_row][emotion_col] = objet
+
+    def get_objet(self,intensite_row:int,emotion_col:int):
+        return self.casiers[intensite_row][emotion_col]

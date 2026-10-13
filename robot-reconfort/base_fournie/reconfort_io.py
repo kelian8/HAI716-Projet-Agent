@@ -37,6 +37,7 @@ from Exceptions import ErreurFormatJSON
 from Carte import Carte
 from Armoire import Armoire
 from Scenario import Scenario
+from Constantes import COLONNE_EMOTION,LIGNE_INTENSITE
 
 __all__ = [
     "ErreurFichier",
@@ -126,7 +127,6 @@ def position_valide(position:(int,int), dimensions:(int,int))->bool:
         True ssi position est valide (compris entre 0 et dimension)"""
     return 0 <= position[0] < dimensions[0] and 0 <= position[1] < dimensions[1]
 
-
 def charger_carte(chemin: str | Path) -> Carte:
     """Charge un fichier carte. Voir l'enonce, section 5.1.
     Args :
@@ -145,14 +145,16 @@ def charger_carte(chemin: str | Path) -> Carte:
     if "dimensions" not in values :
         raise ErreurFormatJSON("Dimensions introuvables", chemin)
     if "hauteur" not in values["dimensions"] or "largeur" not in values["dimensions"] :
-        raise ErreurFormatJSON("Dimensions invalides")
+        raise ErreurFormatJSON("Dimensions invalides", chemin)
     dimensions = (values["dimensions"]["hauteur"],values["dimensions"]["largeur"])
 
     #Grille :
     if "grille" not in values:
-        raise ErreurFormatJson("Grille introuvable : ", chemin)
+        raise ErreurFormatJSON("Grille introuvable : ", chemin)
     
     grille = values["grille"]
+    if len(grille) == 0:
+        raise ErreurFormatJSON("Grille vide", chemin)
     for row in grille :
         if len(row) != len(grille[0]) :
             raise ErreurFormatJSON("Grille non rectangulaire", chemin)
@@ -163,19 +165,19 @@ def charger_carte(chemin: str | Path) -> Carte:
 
     #Depart robot :
     if "depart_robot" not in values:
-        raise ErreurFormatJson("Départ du robot introuvable : ", chemin)
+        raise ErreurFormatJSON("Départ du robot introuvable : ", chemin)
     depart_robot:tuple = tuple(values["depart_robot"])
     if len(depart_robot) != 2 :
         raise ErreurFormatJSON("Position du robot non conforme", chemin)
     if not position_valide(depart_robot,dimensions):
-        raise ErreurFormatJSON("Le point de départ du robot n'est pas dans la carte")
+        raise ErreurFormatJSON("Le point de départ du robot n'est pas dans la carte",chemin)
 
 
     #Position de l'armoire
     if "armoire" not in values:
-        raise ErreurFormatJson("Armoire introuvable : ", chemin)
+        raise ErreurFormatJSON("Armoire introuvable : ", chemin)
     if "position" not in values["armoire"]:
-        raise ErreurFormatJson("Position de l'armoire introuvable : ", chemin)
+        raise ErreurFormatJSON("Position de l'armoire introuvable : ", chemin)
     armoire_pos:tuple = tuple(values["armoire"]["position"])
     if len(armoire_pos) != 2 :
         raise ErreurFormatJSON("Position de l'armoire non conforme", chemin)
@@ -184,14 +186,14 @@ def charger_carte(chemin: str | Path) -> Carte:
 
     #Position du dictionnaire
     if "dictionnaire" not in values:
-        raise ErreurFormatJson("Dictionnaire introuvable : ", chemin)
+        raise ErreurFormatJSON("Dictionnaire introuvable : ", chemin)
     if "position" not in values["dictionnaire"]:
-        raise ErreurFormatJson("Position du dictionnaire introuvable : ", chemin)
+        raise ErreurFormatJSON("Position du dictionnaire introuvable : ", chemin)
     dico_pos:tuple = tuple(values["dictionnaire"]["position"])
     if len(dico_pos) != 2 :
         raise ErreurFormatJSON("Position du dictionnaire non conforme", chemin)
     if not position_valide(dico_pos,dimensions):
-        raise ErreurFormatJSON("La position de l'armoire n'est pas dans la carte", chemin)
+        raise ErreurFormatJSON("La position du dictionnaire n'est pas dans la carte", chemin)
 
 
     #Résidents
@@ -205,7 +207,9 @@ def charger_carte(chemin: str | Path) -> Carte:
         if len(r_pos) != 2 :
             raise ErreurFormatJSON("Position du résident "+ r["nom"] + " non conforme", chemin)
         if not position_valide(r_pos,dimensions):
-            raise ErreurFormatJSON("La position du résident "+ r["nom"] + " pas dans la carte", chemin)
+            raise ErreurFormatJSON("La position du résident "+ r["nom"] + " n'est pas dans la carte", chemin)
+        if r["id"] in residents.keys() :
+            raise ErreurFormatJSON("Id de résident " + r["id"] + " en doublon", chemin)
         residents[r["id"]] = (r["nom"],r_pos)
 
     return Carte(
@@ -218,11 +222,7 @@ def charger_carte(chemin: str | Path) -> Carte:
     )
 
 
-
-    return _lire_json(chemin, "robot-reconfort/carte")
-
-
-def charger_dictionnaire(chemin: str | Path) -> list[Dict[str, Any]]:
+def charger_dictionnaire(chemin: str | Path) -> Dict[str, (str,str)]:
     """Charge un fichier dictionnaire. Voir l'enonce, section 5.2.
     Args :
         chemin : Chemin du fichier JSON à charger
@@ -237,10 +237,17 @@ def charger_dictionnaire(chemin: str | Path) -> list[Dict[str, Any]]:
     values :Dict[str, Any] = _lire_json(chemin, "robot-reconfort/dictionnaire")
     if "entrees" not in values:
         raise ErreurFormatJSON("Entrées du dictionnaire introuvables")
-    dictionnaire: list[Dict[str, Any]] = values["entrees"]
-    for entree in dictionnaire:
+    dictionnaire: list[Dict[str, (str,str)]] = {}
+    for entree in values["entrees"]:
+        #Champs obligatoire manquant
         if "formes" not in entree or "emotion" not in entree or "intensite" not in entree:
             raise ErreurFormatJSON("Une entrée du dictionnaire n'est pas valide")
+        for mot in entree["formes"]:
+            #Même mot dans deux entrées du dictionnaire
+            if mot in dictionnaire.keys():
+                raise ErreurFormatJSON(f"Le mot {mot} est défini plusieur fois dans le dictionnaire")
+            #ajout de chaque forme du mot au dictionnaire
+            dictionnaire[mot] = (entree["emotion"],entree["intensite"])
     return dictionnaire
 
 def charger_armoire(chemin: str | Path) -> Armoire:
@@ -255,18 +262,47 @@ def charger_armoire(chemin: str | Path) -> Armoire:
         ErreurFormatJson : si le JSON n'est pas formatté correctement
         """
     values:Dict[str, Any] = _lire_json(chemin, "robot-reconfort/armoire")
+    #Casier de départ correctement défini
     if "casier_depart" not in values:
-        raise ErreurFormatJSON("Position initiale du casier introuvable",chemin)
+        raise ErreurFormatJSON("Position du casier de départ introuvable",chemin)
     casier_depart:tuple = tuple(values["casier_depart"])
-    if len(casier_depart)!=2:
-        raise ErreurFormatJSON("Position initiale du casier non conforme",chemin)
+    if len(casier_depart)!=2: #Position bien définie sur R2
+        raise ErreurFormatJSON("Position du casier de départ non conforme",chemin)
+    if not position_valide(casier_depart, (3,8)):
+        raise ErreurFormatJSON("Position du casier de départ hors de l'armoire",chemin)
+    
     armoire:Armoire = Armoire(casier_depart)
     if "casiers" not in values:
         raise ErreurFormatJSON("Casiers introuvables",chemin)
+    
     for casier in values["casiers"]:
+        #Champs obligatoire absent
         if "ligne" not in casier or "colonne" not in casier or "emotion" not in casier or "intensite" not in casier or "objet" not in casier:
             raise ErreurFormatJSON("Casier mal formatté",chemin)
+        
+        #Casier hors des dimensions de l'armoire
+        if not position_valide((casier["ligne"],casier["colonne"]),(3,8)):
+            raise ErreurFormatJSON(f"Casier ({casier["ligne"]},{casier["colonne"]}) hors des dimensions de l'armoire",)
+        
+        emotion = casier["emotion"]
+        intensite = casier["intensite"]
+        #Verifier que les emotions et intensité sont correctes et correctement placées
+        if emotion not in COLONNE_EMOTION:
+            raise ErreurFormatJSON("Emotion inconnue : " + emotion, chemin)
+        if intensite not in LIGNE_INTENSITE:
+            raise ErreurFormatJSON("Intensité inconnue : " + intensite, chemin)
+        if COLONNE_EMOTION[emotion] != casier["colonne"]:
+            raise ErreurFormatJSON(f"Le casier ({casier["ligne"]},{casier["colonne"]}) n'a pas la bonne émotion : {emotion}. Il devrait être en colonne {COLONNE_EMOTION[emotion]}",chemin)
+        if LIGNE_INTENSITE[intensite] != casier["ligne"]:
+            raise ErreurFormatJSON(f"Le casier ({casier["ligne"]},{casier["colonne"]}) n'a pas la bonne intensite : {intensite}. Il devrait être à la ligne {LIGNE_INTENSITE[intensite]}",chemin)
+
+        #Casier en double (objet déjà ajouté à cette position)
+        if armoire.get_objet(casier["ligne"],casier["colonne"]) != -1:
+            raise ErreurFormatJSON(f"Le casier ({casier["ligne"]},{casier["colonne"]}) est en double")
+        
+        #Pas de problème détecté
         armoire.add_objet(casier["ligne"],casier["colonne"],casier["objet"])
+
     for row in armoire.casiers:
         if any(casier ==-1 for casier in row):
             raise ErreurFormatJSON("Armoire mal remplie")
@@ -296,13 +332,9 @@ def charger_scenario(chemin: str | Path) -> Scenario:
     # Idem pour l'armoire
     chemin_armoire = "donnees/" + values["armoire"] + ".json"
     armoire = charger_armoire(chemin_armoire)
-
-    if not position_valide(armoire.current_casier,(3,8)):
-        print(armoire.current_casier)
-        raise ErreurFormatJSON("Position initiale du casier hors de la carte",chemin)
    
     #TODO vérifier que les positions du robot, de l'armoire, du dictionnaire et des résidents ne sont pas sur des murs
-
+    #TODO vérifier qu'elles correspondent bien au bon sybole dans la grille
 
     if "demandes" not in values:
         raise ErreurFormatJSON("Demandes introuvables",chemin)
