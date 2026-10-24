@@ -8,4 +8,31 @@ class Carte:
         self.dico_pos = dico_pos
         self.residents = residents
 
-    
+
+
+
+    def get_position(self, element, resident_id=None):
+        """
+        args : 
+            l'element recherche et son id s'il s'agit d'un resident
+
+        return :
+             la position de cette element sur la grille
+
+        
+        what it does : 
+            Retourne la position d'une armoire, du dictionnaire ou d'un résident.
+        """
+
+        if element == "armoire":
+            return self.armoire_pos
+
+        elif element == "dictionnaire":
+            return self.dico_pos
+
+        elif element == "resident":
+            for resident in self.residents:
+                if resident["id"] == resident_id:
+                    return resident["position"]
+
+        return None
