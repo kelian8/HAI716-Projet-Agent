@@ -1,10 +1,10 @@
 from .Etat import Etat
 from .EtatInit import EtatInit
-from .Attente import Attente
-from .NavigationDictionnaire import NavigationDictionnaire
-from .NavigationArmoire import NavigationArmoire
-from .FouillerArmoire import FouillerArmoire
-from .NavigationResident import NavigationResident
+from .EtatAttente import EtatAttente
+from .EtatNavigationDico import EtatNavigationDico
+from .EtatNavigationArm import EtatNavigationArm
+from .EtatFouiller import EtatFouiller
+from .EtatNavigationRes import EtatNavigationRes
 
 
 def creer_etats(robot) -> dict[str, Etat]:
