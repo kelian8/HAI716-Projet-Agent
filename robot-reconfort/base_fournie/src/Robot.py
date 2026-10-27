@@ -1,7 +1,10 @@
 from Carte import *
 from EtatAttente import *
 from collections import deque
+from Simulation import Simulation
+from Etat import creer_etats
 
+class ErreurEtat()
 
 class Robot:
 
@@ -12,7 +15,7 @@ class Robot:
         "O": (0, -1)
     }
 
-
+    parent : Simulation
 
     position : tuple
     carte : Carte
@@ -23,19 +26,23 @@ class Robot:
     armoire_connue : dict
     objet_tenu : str | None 
     current_demande : dict |None #demande qu'on traite actuellement
-    etat : EtatAttente #etat actuel du robot (recherche x, cherche dans armoire, etc )
+    listeEtats: list[Etat]
+    etat : Etat #etat actuel du robot (recherche x, cherche dans armoire, etc )
     emotion_intensite : [str,str] | None
 
-    def __init__(self,carte):
-        self.position = carte.depart_robot
-        self.carte = carte
+    def __init__(self,parent):
+        self.parent = parent
+
+        self.position = parent.get_robot_depart
         self.grille_connue = self.generer_grille_perso()
         #la carte donnée au robot lors de son initialisation dans "simulation", est une carte creer par simulation dont la grille a été remplacxe par une gerille
         #"vierge" a l'execption des residents, l'armoire, et le dico 
         self.armoire_connue= {}
         self.objet_tenu=None
         self.current_demande = None
-        self.etat = xxx #a remplacer
+        self.listeEtats = creer_etats(robot)
+        self.etat = None
+        changer_etat("EtatInit")
         self.emotion_intensite = None
 
 
@@ -51,23 +58,23 @@ class Robot:
             creer la grille la grille perso (vierge) du robot sans lire les murs.
         """
 
-        hauteur = self.carte.dimensions["hauteur"]
-        largeur = self.carte.dimensions["largeur"]
+        dimensionCarte = simulation.get_carte_size() #dimensionCarte[0] = hauteur, dimensionCarte[1] = largeur
 
-        grille = [[None for _ in range(largeur)]for _ in range(hauteur)]
+
+        grille = [[None for _ in range(dimensionCarte[1])]for _ in range(dimensionCarte[0])]
 
         #le robot connaît sa position de départ.
         ligne, colonne = self.position
         grille[ligne][colonne] = "."
 
         #il connaît les positions des elements.
-        ligne, colonne = self.carte.armoire_pos
+        ligne, colonne = self.simulation.get_armoire_pos()
         grille[ligne][colonne] = "A"
 
-        ligne, colonne = self.carte.dico_pos
+        ligne, colonne = self.simulation.get_dico_pos()
         grille[ligne][colonne] = "D"
 
-        for resident in self.carte.residents:
+        for resident in self.simulation.get_residents
             ligne, colonne = resident["position"]
             grille[ligne][colonne] = "P"
 
@@ -111,6 +118,7 @@ class Robot:
         """
 
         grille_reelle = self.carte.grille
+        dimensionCarte = self.simulation.get_carte_size()
         ligne, colonne = self.position
 
         symboles = {
@@ -130,12 +138,12 @@ class Robot:
 
             # Hors de la grille : aucune case à observer.
             if not (
-                0 <= l < len(grille_reelle)
-                and 0 <= c < len(grille_reelle[0])
+                0 <= l < len(dimensionCarte[0])
+                and 0 <= c < len(dimensionCarte[1])
             ):
                 continue
 
-            symbole_reel = grille_reelle[l][c]
+            symbole_reel = self.simulation.get_symbole(l,c)
             perceptions[direction] = symboles[symbole_reel]
 
         return perceptions
@@ -375,7 +383,7 @@ class Robot:
 
 
 
-    def changer_etat(self, nouvel_etat):
+    def changer_etat(self, nouvel_etat:str):
             """args : 
                 le nouvel etat
 
@@ -392,7 +400,12 @@ class Robot:
             if self.etat is not None:
                 self.etat.exit()
 
-            self.etat = nouvel_etat
+            try:
+                prochain_etat = self.listeEtats[nouvel_etat]
+            except KeyError as e:
+                raise ErreurEtat(f"L'état {nouvel_etat} n'existe pas")
+
+            self.etat = prochain_etat
             self.etat.enter()
 
 
