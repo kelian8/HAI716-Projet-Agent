@@ -18,8 +18,9 @@ class Robot:
     parent : Simulation
 
     position : tuple
-    carte : Carte
+    carte : Carte #TODO enlever ça (donc enlever les appels à carte dans la fonction naviguer_vers pour bien s'assurer que le robot n'a pas accès à la carte)
     grille 
+    dico_pos
     #dictionnaire de dictionnaire key1 = emotion key1.x = intensité et valeur =position du casier dans l'armoire et objet(eventuellement null)
     #ne sert pas a grand chose pour l'instant si ce n'est savoir si un casier est eventuellement vide et si c'est le cas et qu'on a besoin de l'objet 
     #correspondant, nous irons a un casier ayant une emotion/intensite proche de celle recherchée initialement
@@ -37,6 +38,7 @@ class Robot:
         self.grille_connue = self.generer_grille_perso()
         #la carte donnée au robot lors de son initialisation dans "simulation", est une carte creer par simulation dont la grille a été remplacxe par une gerille
         #"vierge" a l'execption des residents, l'armoire, et le dico 
+        self.dico_pos = self.simulation.scenario.carte.get_position("dictionnaire")
         self.armoire_connue= {}
         self.objet_tenu=None
         self.current_demande = None
@@ -549,16 +551,3 @@ def donnerObjet(resident):
         donne l'objet au resident et met a jour robot.objet_tenu
     """
     pass
-
-def consulter(): 
-    """ 
-    args : 
-        rien
-    
-    return : 
-        rien
-
-    what it does : 
-        cherche l'emotion/intensité correspondantes a la phrase de la demande qu'il dont il s'occupe actuellemment
-        et met a jour l'attribut "emotion_intensite" du robot par l'emotion et l'intensité correspondante a la phrase
-    """

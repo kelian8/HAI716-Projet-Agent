@@ -10,7 +10,7 @@ class Carte:
 
 
 
-
+    #TODO est ce qu'on peut pas passer cette fonction dans simulation ? comme ça elle evite les self.simulation.scenario.carte.get_position
     def get_position(self, element, resident_id=None):
         """
         args : 

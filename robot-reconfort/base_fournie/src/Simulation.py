@@ -25,9 +25,10 @@ class Simulation:
         return self.scenario.demandes
 
     def get_next_demande():
-        demades = get_demandes()
+        demandes = get_demandes()
         if len(demandes) != 0:
             return demandes.pop(0)
+        else return None
 
     def get_robot_depart():
         return self.scenario.carte.depart_robot
