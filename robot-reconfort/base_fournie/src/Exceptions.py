@@ -13,3 +13,19 @@ class ErreurFormatJSON(Exception):
             super().__init__(f"[{fichier}] {message}")
         else:
             super().__init__(message)
+
+class ErreurEtat(Exception):
+    """Exception levée lorsque le robot tente de transitionner vers un état inconnu"""
+
+    def __init__(self, message: str, fichier: str = None):
+        """Initialise l'exception.
+
+        Args:
+            message: Détail de ce qui ne va pas.
+            fichier: Chemin du fichier concerné (optionnel, pour contexte).
+        """
+        self.fichier = fichier
+        if fichier:
+            super().__init__(f"[{fichier}] {message}")
+        else:
+            super().__init__(message)
