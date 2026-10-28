@@ -5,7 +5,7 @@ import reconfort_io as rio
 
 class Simulation:
 
-    def __init__(self, scenario, dictionnaire):
+    def __init__(self, scenario, dictionnaire:dict[str,tuple[str,str]]):
         self.robot = Robot(self)
         self.scenario:Scenario = scenario
         self.dictionnaire = dictionnaire

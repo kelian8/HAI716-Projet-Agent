@@ -35,4 +35,4 @@ class Carte:
                 if resident["id"] == resident_id:
                     return resident["position"]
 
-        return (-1,-1)
+        return (-1,-1) #TODO faire des vérifs que la position reçue par cette fonction est correcte

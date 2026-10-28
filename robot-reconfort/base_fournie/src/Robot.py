@@ -28,7 +28,7 @@ class Robot:
     etat : Etat | None #etat actuel du robot (recherche x, cherche dans armoire, etc )
     emotion_intensite : tuple[str,str] | None
 
-    def __init__(self,parent):
+    def __init__(self,parent:Simulation):
         self.parent = parent
 
         self.position = parent.get_robot_depart()
@@ -37,6 +37,7 @@ class Robot:
         #la carte donnée au robot lors de son initialisation dans "simulation", est une carte creer par simulation dont la grille a été remplacxe par une gerille
         #"vierge" a l'execption des residents, l'armoire, et le dico 
         self.dico_pos = self.parent.scenario.carte.get_position("dictionnaire")
+        self.armoire_pos = self.parent.scenario.carte.get_position("armoire")
         self.armoire_connue= {}
         self.objet_tenu=None
         self.current_demande = None
@@ -383,29 +384,29 @@ class Robot:
 
 
     def changer_etat(self, nouvel_etat:str):
-            """args : 
-                le nouvel etat
+        """args : 
+            le nouvel etat
 
-            return :
-                rien
+        return :
+            rien
 
-            
-            what it does : 
-                Effectue une transition entre deux états.
-                sort de l'etat courant 
-                entre dans le nouvel etat
-            """
+        
+        what it does : 
+            Effectue une transition entre deux états.
+            sort de l'etat courant 
+            entre dans le nouvel etat
+        """
 
-            if self.etat is not None:
-                self.etat.exit()
+        if self.etat is not None:
+            self.etat.exit()
 
-            try:
-                prochain_etat = self.listeEtats[nouvel_etat]
-            except KeyError as e:
-                raise ErreurEtat(f"L'état {nouvel_etat} n'existe pas")
+        try:
+            prochain_etat = self.listeEtats[nouvel_etat]
+        except KeyError as e:
+            raise ErreurEtat(f"L'état {nouvel_etat} n'existe pas")
 
-            self.etat = prochain_etat
-            self.etat.enter()
+        self.etat = prochain_etat
+        self.etat.enter()
 
 
 
@@ -481,55 +482,6 @@ class Robot:
 #(ex: chercherDansArmoire, majArmoire, prendreObjet seront des fonctions de l'etat "recherche_dans_l'armoire" )
 ########################################################################
 
-
-
-
-
-def majArmoire(key1,key2):
-    """
-    args : 
-        Key1 : str contenant l'emotion
-        Key2 : str contenant l'intensite de l'emotion
-
-    return: 
-        rien
-
-
-    what it does : 
-        met a jour l'armoire connue du robot, en mettant a jour le dico de dico avec key1 : key2 : [position casier dans l'armoire, objet contenu dans casier]
-    """
-    pass
-
-def chercherDansArmoire(emotion, intensite):
-    """
-    args : 
-        emotion : str contenant l'emotion recherchée
-        intensite : str contenant l'intensité recherchée
-
-    return : 
-        1 si objet correspondant trouvé 0 sinon
-
-    what it does : 
-        est appele  quand le robot est sur une case adjacente a l'armoire et que le robot est dans un etat "chercher armoire"
-        parcours de casier en casier jusqu'a l'emotion/intensité recherchées en mettant a jour l'armoire_connue du robot.
-        fait appel a prendreObjet si l'objet correspond a l'emotion/intensite et remplace l'objet du casier a None dans l'armoire et l'armoire_connue du robot
-        TODO faire une enum globale pour passer d'une emotion/intensité a un couple (ligne, colonne) pour se reprer dans l'armoire
-    """
-    pass
-
-def prendreObjet(obj):
-    """
-    args : 
-        obj : str le nom de l'objet qu'on prend
-
-    return : 
-        rien
-
-    what it does : 
-        prend l'objet = met a jour robot.objet_tenu avec l'objet prit 
-    
-    """
-    pass
 
 def donnerObjet(resident):
     """

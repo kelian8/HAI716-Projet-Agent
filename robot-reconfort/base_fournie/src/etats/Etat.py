@@ -3,7 +3,6 @@ from Robot import Robot
 
 
 class Etat(ABC):
-    Robot : robot
 
 
     def __init__(self,robot:Robot):
