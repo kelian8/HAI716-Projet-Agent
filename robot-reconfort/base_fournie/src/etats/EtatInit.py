@@ -1,5 +1,4 @@
 from Etat import Etat
-from EtatNavigationDico
 
 class EtatInit(Etat):
 
@@ -11,4 +10,4 @@ class EtatInit(Etat):
 
     def simulation_step(self):
         print("Mise en route du robot")
-        self.robot.changerEtat(EtatAttente)
+        self.robot.changerEtat("EtatAttente")

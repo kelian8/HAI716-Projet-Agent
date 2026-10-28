@@ -1,10 +1,12 @@
+from typing import Any
 from Carte import Carte
 from Armoire import Armoire
 
 
 class Scenario:
-    def __init__(self, nom:str, carte:Carte, armoire:Armoire, demandes:list[dict[str,any]]):
+    def __init__(self, nom:str,nom_carte:str, carte:Carte, armoire:Armoire, demandes:list[dict[str,Any]]):
         self.nom = nom
+        self.nom_carte = nom_carte
         self.carte = carte
         self.armoire = armoire
         self.demandes = demandes

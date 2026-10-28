@@ -117,7 +117,7 @@ def _lire_json(chemin: str | Path, format_attendu: str) -> Dict[str, Any]:
 
     return donnees
 
-def position_valide(position:(int,int), dimensions:(int,int))->bool:
+def position_valide(position:tuple[int,int], dimensions:tuple[int,int])->bool:
     """Vérification de position dans la grille
     Args :
         position : paire d'entier représentant la position à vérifier
@@ -143,73 +143,73 @@ def charger_carte(chemin: str | Path) -> Carte:
 
     #Dimensions
     if "dimensions" not in values :
-        raise ErreurFormatJSON("Dimensions introuvables", chemin)
+        raise ErreurFormatJSON("Dimensions introuvables", chemin) 
     if "hauteur" not in values["dimensions"] or "largeur" not in values["dimensions"] :
-        raise ErreurFormatJSON("Dimensions invalides", chemin)
+        raise ErreurFormatJSON("Dimensions invalides", chemin) 
     dimensions = (values["dimensions"]["hauteur"],values["dimensions"]["largeur"])
 
     #Grille :
     if "grille" not in values:
-        raise ErreurFormatJSON("Grille introuvable : ", chemin)
+        raise ErreurFormatJSON("Grille introuvable : ", chemin) 
     
     grille = values["grille"]
     if len(grille) == 0:
-        raise ErreurFormatJSON("Grille vide", chemin)
+        raise ErreurFormatJSON("Grille vide", chemin) 
     for row in grille :
         if len(row) != len(grille[0]) :
-            raise ErreurFormatJSON("Grille non rectangulaire", chemin)
+            raise ErreurFormatJSON("Grille non rectangulaire", chemin) 
     
     if len(grille) != dimensions[0] or any(len(ligne) != dimensions[1] for ligne in grille):
-        raise ErreurFormatJSON("Les dimensions de la grille ne respectent pas les dimensions données", chemin)
+        raise ErreurFormatJSON("Les dimensions de la grille ne respectent pas les dimensions données", chemin) 
 
 
     #Depart robot :
     if "depart_robot" not in values:
-        raise ErreurFormatJSON("Départ du robot introuvable : ", chemin)
+        raise ErreurFormatJSON("Départ du robot introuvable : ", chemin) 
     depart_robot:tuple = tuple(values["depart_robot"])
     if len(depart_robot) != 2 :
-        raise ErreurFormatJSON("Position du robot non conforme", chemin)
+        raise ErreurFormatJSON("Position du robot non conforme", chemin) 
     if not position_valide(depart_robot,dimensions):
-        raise ErreurFormatJSON("Le point de départ du robot n'est pas dans la carte",chemin)
+        raise ErreurFormatJSON("Le point de départ du robot n'est pas dans la carte",chemin) 
 
 
     #Position de l'armoire
     if "armoire" not in values:
-        raise ErreurFormatJSON("Armoire introuvable : ", chemin)
+        raise ErreurFormatJSON("Armoire introuvable : ", chemin) 
     if "position" not in values["armoire"]:
-        raise ErreurFormatJSON("Position de l'armoire introuvable : ", chemin)
+        raise ErreurFormatJSON("Position de l'armoire introuvable : ", chemin) 
     armoire_pos:tuple = tuple(values["armoire"]["position"])
     if len(armoire_pos) != 2 :
-        raise ErreurFormatJSON("Position de l'armoire non conforme", chemin)
+        raise ErreurFormatJSON("Position de l'armoire non conforme", chemin) 
     if not position_valide(armoire_pos,dimensions):
-        raise ErreurFormatJSON("La position de l'armoire n'est pas dans la carte", chemin)
+        raise ErreurFormatJSON("La position de l'armoire n'est pas dans la carte", chemin) 
 
     #Position du dictionnaire
     if "dictionnaire" not in values:
-        raise ErreurFormatJSON("Dictionnaire introuvable : ", chemin)
+        raise ErreurFormatJSON("Dictionnaire introuvable : ", chemin) 
     if "position" not in values["dictionnaire"]:
-        raise ErreurFormatJSON("Position du dictionnaire introuvable : ", chemin)
+        raise ErreurFormatJSON("Position du dictionnaire introuvable : ", chemin) 
     dico_pos:tuple = tuple(values["dictionnaire"]["position"])
     if len(dico_pos) != 2 :
-        raise ErreurFormatJSON("Position du dictionnaire non conforme", chemin)
+        raise ErreurFormatJSON("Position du dictionnaire non conforme", chemin) 
     if not position_valide(dico_pos,dimensions):
-        raise ErreurFormatJSON("La position du dictionnaire n'est pas dans la carte", chemin)
+        raise ErreurFormatJSON("La position du dictionnaire n'est pas dans la carte", chemin) 
 
 
     #Résidents
     if "residents" not in values:
-        raise ErreurFormatJSON("Résidents introuvables", chemin)
+        raise ErreurFormatJSON("Résidents introuvables", chemin) 
     residents = {}
     for r in values["residents"]:
         if "id" not in r or "nom" not in r or "position" not in r:
-            raise ErreurFormatJSON("Un résident est mal formatté",chemin)
+            raise ErreurFormatJSON("Un résident est mal formatté",chemin) 
         r_pos:tuple = tuple(r["position"])
         if len(r_pos) != 2 :
-            raise ErreurFormatJSON("Position du résident "+ r["nom"] + " non conforme", chemin)
+            raise ErreurFormatJSON("Position du résident "+ r["nom"] + " non conforme", chemin) 
         if not position_valide(r_pos,dimensions):
-            raise ErreurFormatJSON("La position du résident "+ r["nom"] + " n'est pas dans la carte", chemin)
+            raise ErreurFormatJSON("La position du résident "+ r["nom"] + " n'est pas dans la carte", chemin) 
         if r["id"] in residents.keys() :
-            raise ErreurFormatJSON("Id de résident " + r["id"] + " en doublon", chemin)
+            raise ErreurFormatJSON("Id de résident " + r["id"] + " en doublon", chemin) 
         residents[r["id"]] = (r["nom"],r_pos)
 
     return Carte(
@@ -221,8 +221,7 @@ def charger_carte(chemin: str | Path) -> Carte:
         residents = residents
     )
 
-
-def charger_dictionnaire(chemin: str | Path) -> Dict[str, (str,str)]:
+def charger_dictionnaire(chemin: str | Path) -> Dict[str, tuple[str,str]]:
     """Charge un fichier dictionnaire. Voir l'enonce, section 5.2.
     Args :
         chemin : Chemin du fichier JSON à charger
@@ -237,7 +236,7 @@ def charger_dictionnaire(chemin: str | Path) -> Dict[str, (str,str)]:
     values :Dict[str, Any] = _lire_json(chemin, "robot-reconfort/dictionnaire")
     if "entrees" not in values:
         raise ErreurFormatJSON("Entrées du dictionnaire introuvables")
-    dictionnaire: list[Dict[str, (str,str)]] = {}
+    dictionnaire: Dict[str, tuple[str,str]] = {}
     for entree in values["entrees"]:
         #Champs obligatoire manquant
         if "formes" not in entree or "emotion" not in entree or "intensite" not in entree:
@@ -346,9 +345,10 @@ def charger_scenario(chemin: str | Path) -> Scenario:
 
     return Scenario(
         nom=values["nom"],
+        nom_carte = values["carte"],
         carte=carte,
         armoire=armoire,
-        demandes=demandes,
+        demandes=demandes
     )
 
 

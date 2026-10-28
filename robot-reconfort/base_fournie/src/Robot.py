@@ -1,10 +1,9 @@
 from Carte import *
-from EtatAttente import *
 from collections import deque
+from Exceptions import ErreurEtat
 from Simulation import Simulation
-from Etat import creer_etats
-
-class ErreurEtat()
+from etats import creer_etats
+from etats.Etat import Etat
 
 class Robot:
 
@@ -17,34 +16,33 @@ class Robot:
 
     parent : Simulation
 
-    position : tuple
+    position : tuple[int,int]
     carte : Carte #TODO enlever ça (donc enlever les appels à carte dans la fonction naviguer_vers pour bien s'assurer que le robot n'a pas accès à la carte)
-    grille 
-    dico_pos
     #dictionnaire de dictionnaire key1 = emotion key1.x = intensité et valeur =position du casier dans l'armoire et objet(eventuellement null)
     #ne sert pas a grand chose pour l'instant si ce n'est savoir si un casier est eventuellement vide et si c'est le cas et qu'on a besoin de l'objet 
     #correspondant, nous irons a un casier ayant une emotion/intensite proche de celle recherchée initialement
     armoire_connue : dict
     objet_tenu : str | None 
     current_demande : dict |None #demande qu'on traite actuellement
-    listeEtats: list[Etat]
-    etat : Etat #etat actuel du robot (recherche x, cherche dans armoire, etc )
-    emotion_intensite : [str,str] | None
+    listeEtats: dict[str,Etat]
+    etat : Etat | None #etat actuel du robot (recherche x, cherche dans armoire, etc )
+    emotion_intensite : tuple[str,str] | None
 
     def __init__(self,parent):
         self.parent = parent
 
-        self.position = parent.get_robot_depart
+        self.position = parent.get_robot_depart()
+        self.position_armoire = parent.get_casier_depart()
         self.grille_connue = self.generer_grille_perso()
         #la carte donnée au robot lors de son initialisation dans "simulation", est une carte creer par simulation dont la grille a été remplacxe par une gerille
         #"vierge" a l'execption des residents, l'armoire, et le dico 
-        self.dico_pos = self.simulation.scenario.carte.get_position("dictionnaire")
+        self.dico_pos = self.parent.scenario.carte.get_position("dictionnaire")
         self.armoire_connue= {}
         self.objet_tenu=None
         self.current_demande = None
-        self.listeEtats = creer_etats(robot)
+        self.listeEtats = creer_etats(self)
         self.etat = None
-        changer_etat("EtatInit")
+        self.changer_etat("EtatInit")
         self.emotion_intensite = None
 
 
@@ -60,23 +58,23 @@ class Robot:
             creer la grille la grille perso (vierge) du robot sans lire les murs.
         """
 
-        dimensionCarte = simulation.get_carte_size() #dimensionCarte[0] = hauteur, dimensionCarte[1] = largeur
+        dimensionCarte = self.parent.get_carte_size() #dimensionCarte[0] = hauteur, dimensionCarte[1] = largeur
 
 
-        grille = [[None for _ in range(dimensionCarte[1])]for _ in range(dimensionCarte[0])]
+        grille = [["." for _ in range(dimensionCarte[1])]for _ in range(dimensionCarte[0])]
 
         #le robot connaît sa position de départ.
         ligne, colonne = self.position
         grille[ligne][colonne] = "."
 
         #il connaît les positions des elements.
-        ligne, colonne = self.simulation.get_armoire_pos()
+        ligne, colonne = self.parent.get_armoire_pos()
         grille[ligne][colonne] = "A"
 
-        ligne, colonne = self.simulation.get_dico_pos()
+        ligne, colonne = self.parent.get_dico_pos()
         grille[ligne][colonne] = "D"
 
-        for resident in self.simulation.get_residents
+        for resident in self.parent.get_residents():
             ligne, colonne = resident["position"]
             grille[ligne][colonne] = "P"
 
@@ -119,8 +117,7 @@ class Robot:
             réelle et renvoit le resultat.
         """
 
-        grille_reelle = self.carte.grille
-        dimensionCarte = self.simulation.get_carte_size()
+        dimensionCarte = self.parent.get_carte_size()
         ligne, colonne = self.position
 
         symboles = {
@@ -140,12 +137,12 @@ class Robot:
 
             # Hors de la grille : aucune case à observer.
             if not (
-                0 <= l < len(dimensionCarte[0])
-                and 0 <= c < len(dimensionCarte[1])
+                0 <= l < dimensionCarte[0]
+                and 0 <= c < dimensionCarte[1]
             ):
                 continue
 
-            symbole_reel = self.simulation.get_symbole(l,c)
+            symbole_reel = self.parent.get_symbole(l,c)
             perceptions[direction] = symboles[symbole_reel]
 
         return perceptions
@@ -230,7 +227,7 @@ class Robot:
             self.grille_connue[nouvelle_ligne][nouvelle_colonne] = "#"
             return False
 
-        self.position = [nouvelle_ligne, nouvelle_colonne]#deplacement du robot
+        self.position = (nouvelle_ligne, nouvelle_colonne)#deplacement du robot
 
         print(f"Déplacement {direction} : position {self.position}")
 
@@ -252,7 +249,7 @@ class Robot:
            on suppose les cases inconnues sont libres
         """
 
-        depart = tuple(self.position)
+        depart = self.position
         destinations = {tuple(p) for p in destinations}
 
         if depart in destinations:
@@ -262,7 +259,7 @@ class Robot:
         largeur = len(self.grille_connue[0])
 
         file = deque([depart])
-        predecesseurs = {depart: None}
+        predecesseurs:dict[tuple[int,int],tuple[int,int] | None] = {depart: None}
 
         while file:
             courant = file.popleft()
@@ -414,7 +411,7 @@ class Robot:
 
 
     def simulation_step(self):
-            """
+        """
         args : 
             rien
         
@@ -427,8 +424,8 @@ class Robot:
             verification de la position du robot par rapport a son "objectif" actuel,
             appels aux fonctions en conséquences, mettra a jour la carte etc
         """
-
-        self.etat.simulation_step()
+        if self.etat != None:
+            self.etat.simulation_step()
 
 
 

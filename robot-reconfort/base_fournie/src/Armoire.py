@@ -1,6 +1,6 @@
 class Armoire:
     def __init__(self,depart:(int,int)):
-        self.current_casier = depart
+        self.casier_depart = depart
         self.casiers = []
         for row in range(3):
             self.casiers.append([])

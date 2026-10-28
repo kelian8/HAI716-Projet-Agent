@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./robot-reconfort/base_fournie/src"
+    ]
+}

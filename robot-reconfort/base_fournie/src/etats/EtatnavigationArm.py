@@ -1,7 +1,7 @@
 from Etat import Etat
 from Robot import *
 
-class EtatNavigationDico(Etat):
+class EtatNavigationArm(Etat):
 
     def enter(self):
         print("Le robot commence à se déplacer vers l'armoire.")

@@ -1,6 +1,6 @@
 class Carte:
 
-    def __init__(self, dimensions, grille, depart_robot, armoire_pos, dico_pos, residents):
+    def __init__(self, dimensions:tuple[int,int], grille, depart_robot, armoire_pos, dico_pos, residents):
         self.dimensions = dimensions
         self.grille = grille
         self.depart_robot = depart_robot
@@ -11,7 +11,7 @@ class Carte:
 
 
     #TODO est ce qu'on peut pas passer cette fonction dans simulation ? comme ça elle evite les self.simulation.scenario.carte.get_position
-    def get_position(self, element, resident_id=None):
+    def get_position(self, element, resident_id=None)->tuple[int,int]:
         """
         args : 
             l'element recherche et son id s'il s'agit d'un resident
@@ -35,4 +35,4 @@ class Carte:
                 if resident["id"] == resident_id:
                     return resident["position"]
 
-        return None
+        return (-1,-1)

@@ -1,7 +1,10 @@
+from pathlib import Path
+
+
 class ErreurFormatJSON(Exception):
     """Exception levée quand un fichier JSON de données ne respecte pas le format attendu."""
 
-    def __init__(self, message: str, fichier: str = None):
+    def __init__(self, message: str, fichier: str | Path = ""):
         """Initialise l'exception.
 
         Args:
@@ -17,7 +20,7 @@ class ErreurFormatJSON(Exception):
 class ErreurEtat(Exception):
     """Exception levée lorsque le robot tente de transitionner vers un état inconnu"""
 
-    def __init__(self, message: str, fichier: str = None):
+    def __init__(self, message: str, fichier: str | Path = ""):
         """Initialise l'exception.
 
         Args:

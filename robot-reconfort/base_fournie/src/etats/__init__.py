@@ -14,7 +14,7 @@ def creer_etats(robot) -> dict[str, Etat]:
         Dictionnaire nom d'état -> instance correspondante.
     """
     etats = {
-        "EtatInit" : EtatInit(robot)
+        "EtatInit" : EtatInit(robot),
         "EtatAttente" : EtatAttente(robot),
         "EtatNavigationDico" : EtatNavigationDico(robot),
         "EtatNavigationArm" : EtatNavigationArm(robot),
