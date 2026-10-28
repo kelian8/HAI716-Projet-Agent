@@ -27,6 +27,7 @@ class Robot:
     listeEtats: dict[str,Etat]
     etat : Etat | None #etat actuel du robot (recherche x, cherche dans armoire, etc )
     emotion_intensite : tuple[str,str] | None
+    objectif : str #Objetif du robot : "armoire", "dictionnaire" ou "resident"
 
     def __init__(self,parent:Simulation):
         self.parent = parent
@@ -102,282 +103,6 @@ class Robot:
         for k in carte.residents : 
             pass
 """
-
-############################fonctions pour le deplacement/mise ajour grille du robot######################################
-
-    def percevoir_voisins(self):
-        """
-        args : 
-            rien
-        
-        return :
-            dico du contenu des cases voisines
-
-        what it does : 
-            regarde les quatre cases adjacentes au robot dans la grille
-            réelle et renvoit le resultat.
-        """
-
-        dimensionCarte = self.parent.get_carte_size()
-        ligne, colonne = self.position
-
-        symboles = {
-            "#": "mur",
-            ".": "libre",
-            "R": "libre",
-            "A": "armoire",
-            "D": "dictionnaire",
-            "P": "resident"
-        }
-
-        perceptions = {}
-
-        for direction, (dl, dc) in self.DIRECTIONS.items():
-            l = ligne + dl
-            c = colonne + dc
-
-            # Hors de la grille : aucune case à observer.
-            if not (
-                0 <= l < dimensionCarte[0]
-                and 0 <= c < dimensionCarte[1]
-            ):
-                continue
-
-            symbole_reel = self.parent.get_symbole(l,c)
-            perceptions[direction] = symboles[symbole_reel]
-
-        return perceptions
-
-
-    
-    def mettre_a_jour_grille_connue(self):
-        """
-            args: 
-                rien
-
-            return:
-                dico du contenu des cases voisines a celles du robot
-        
-            what it does
-                met a jour la grille perso du robot avec les elements des cases voisines.
-        """
-
-        perceptions = self.percevoir_voisins() #on recup les element des cases voisines
-
-        symboles = {
-            "mur": "#",
-            "libre": ".",
-            "armoire": "A",
-            "dictionnaire": "D",
-            "resident": "P"
-        }
-
-        ligne, colonne = self.position
-
-        for direction, contenu in perceptions.items():
-            dl, dc = self.DIRECTIONS[direction] #on recupere les "modificateurs" de positions des direction
-
-            #calcul des cases voisines selon les "modificateurs"
-            l = ligne + dl
-            c = colonne + dc
-
-            self.grille_connue[l][c] = symboles[contenu] #met a jour la grille
-
-            if contenu == "mur":
-                print(f"Mur découvert en ({l}, {c})")
-
-        return perceptions
-
-
-    def avancer(self, direction):
-        """
-            args: 
-                direction de deplacement du robot O,S,N,E
-
-            return :
-                bool indiquant si le deplacement a pu etre effectue
-
-            what it does : 
-                effectue  le deplacement du robot dans la grille si il est possible et renvoit true, sinon pas
-                de deplacement et renvoit false.
-                
-        """
-
-        if direction not in self.DIRECTIONS:
-            raise ValueError("Direction inconnue")
-
-        dl, dc = self.DIRECTIONS[direction]
-
-        nouvelle_ligne = self.position[0] + dl
-        nouvelle_colonne = self.position[1] + dc
-
-        grille_reelle = self.carte.grille
-
-        # verif des limites
-        if not (0 <= nouvelle_ligne < len(grille_reelle)
-            and 0 <= nouvelle_colonne < len(grille_reelle[0])):
-
-            print("Déplacement impossible : hors de la grille")
-            return False
-
-        symbole = grille_reelle[nouvelle_ligne][nouvelle_colonne]
-
-        #on verifie que les cases sont des cases traversables
-        if symbole not in (".", "R"):
-            print(f"Obstacle inattendu en "f"({nouvelle_ligne}, {nouvelle_colonne})")
-            self.grille_connue[nouvelle_ligne][nouvelle_colonne] = "#"
-            return False
-
-        self.position = (nouvelle_ligne, nouvelle_colonne)#deplacement du robot
-
-        print(f"Déplacement {direction} : position {self.position}")
-
-        return True
-
-
-
-
-    def calculer_chemin(self, destinations):
-        """
-        args: 
-            destination a laquelle le robot doit se rendre 
-
-        return : 
-            rien 
-
-        what it does :  
-            calcule un chemin entre la position du robot et la destination en se basant sur la grille perso du robot.
-           on suppose les cases inconnues sont libres
-        """
-
-        depart = self.position
-        destinations = {tuple(p) for p in destinations}
-
-        if depart in destinations:
-            return [depart]
-
-        hauteur = len(self.grille_connue)
-        largeur = len(self.grille_connue[0])
-
-        file = deque([depart])
-        predecesseurs:dict[tuple[int,int],tuple[int,int] | None] = {depart: None}
-
-        while file:
-            courant = file.popleft()
-
-            if courant in destinations:
-                chemin = []
-                case = courant
-
-                while case is not None:
-                    chemin.append(case)
-                    case = predecesseurs[case]
-
-                chemin.reverse()
-                return chemin
-
-            for dl, dc in self.DIRECTIONS.values():
-                l = courant[0] + dl
-                c = courant[1] + dc
-                voisin = (l, c)
-
-                if not (0 <= l < hauteur and 0 <= c < largeur):
-                    continue
-
-                if voisin in predecesseurs:
-                    continue
-
-                contenu = self.grille_connue[l][c]
-
-                # Une case inconnue est supposée libre.
-                # Les murs et les éléments ne sont pas traversables.
-                if contenu not in (None, "."):
-                    continue
-
-                predecesseurs[voisin] = courant
-                file.append(voisin)
-
-        return None
-
-    #les fonctions (calculer_chemin,avancer,mettre_a_jour_grille_connue,percevoir_voisins) sont utilisées dans cette fonction
-    def naviguer_vers(self, position_cible):
-        """
-            args:
-                destination 
-
-            return :
-                bool true si le robot est arrive a la destination et false sinon
-
-            what it does:
-                fait naaviguer le robot jusqu'à une case adjacente a destination.
-
-                a chaque deplacement :
-                    on percoit les cases voisines
-                    on met à jour la grille perso du robot
-                    on recalcule le chemin
-                    et on avance d'une case
-        """
-
-        cible = tuple(position_cible)
-
-        while True:
-
-            #decouverte des cases autour du robot
-            self.mettre_a_jour_grille_connue()
-
-            #les cases adjacentes a la cible sont les destinations
-            #on calcul la positions des cases adjacentes a la destinantion
-            destinations = []
-
-            for dl, dc in self.DIRECTIONS.values():
-                l = cible[0] + dl
-                c = cible[1] + dc
-
-                if not (
-                    0 <= l < len(self.grille_connue)
-                    and 0 <= c < len(self.grille_connue[0])
-                ):
-                    continue
-
-                contenu = self.grille_connue[l][c]
-
-                if contenu in (None, "."):
-                    destinations.append((l, c))
-
-            #on verifie si le robot est arrive a une des destinations
-            if tuple(self.position) in destinations:
-                print(f"Destination atteinte depuis {self.position}")
-                return True
-
-            #calcul de l'itineraire a partir de la grille perso du robot.
-            chemin = self.calculer_chemin(destinations)
-
-            if chemin is None:
-                print("Aucun chemin connu vers la cible.")
-                return False
-
-            print("Chemin calculé :", chemin)
-
-            #on se deplace, puis on recommence la boucle pour verifier tout ce qu'on vient de verifier
-            prochaine_case = chemin[1]
-
-            dl = prochaine_case[0] - self.position[0]
-            dc = prochaine_case[1] - self.position[1]
-
-            #pour renvoyer la direction correspondant a (dl,dc)
-            direction = None
-            for nom, delta in self.DIRECTIONS.items():
-                if delta == (dl, dc):
-                    direction = nom
-                    break
-            
-
-            #si deplacement pas possible on recalcul un itinineraire
-            if not self.avancer(direction):
-                print("Recalcul du chemin apres l'obstacle...")
-                continue
-
-
 
 ############################fonctions pour le deplacement/mise ajour grille du robot######################################
 
@@ -462,18 +187,196 @@ class Robot:
 
 
 
+############################fonctions pour le deplacement/mise ajour grille du robot######################################
+
+    def percevoir_voisins(self):
+        """
+        args : 
+            rien
+        
+        return :
+            dico du contenu des cases voisines
+
+        what it does : 
+            regarde les quatre cases adjacentes au robot dans la grille
+            réelle et renvoit le resultat.
+        """
+
+        dimensionCarte = self.parent.get_carte_size()
+        ligne, colonne = self.position
+
+        symboles = {
+            "#": "mur",
+            ".": "libre",
+            "R": "libre",
+            "A": "armoire",
+            "D": "dictionnaire",
+            "P": "resident"
+        }
+
+        perceptions = {}
+
+        for direction, (dl, dc) in self.DIRECTIONS.items():
+            l = ligne + dl
+            c = colonne + dc
+
+            # Hors de la grille : aucune case à observer.
+            if not (
+                0 <= l < dimensionCarte[0]
+                and 0 <= c < dimensionCarte[1]
+            ):
+                continue
+
+            symbole_reel = self.parent.get_symbole(l,c)
+            perceptions[direction] = symboles[symbole_reel]
+
+        return perceptions
 
 
+    
+    def mettre_a_jour_grille_connue(self, perceptions):
+        """
+            args: 
+                rien
+
+            return:
+                dico du contenu des cases voisines a celles du robot
+        
+            what it does
+                met a jour la grille perso du robot avec les elements des cases voisines.
+        """
+
+        symboles = {
+            "mur": "#",
+            "libre": ".",
+            "armoire": "A",
+            "dictionnaire": "D",
+            "resident": "P"
+        }
+
+        ligne, colonne = self.position
+
+        for direction, contenu in perceptions.items():
+            dl, dc = self.DIRECTIONS[direction] #on recupere les "modificateurs" de positions des direction
+
+            #calcul des cases voisines selon les "modificateurs"
+            l = ligne + dl
+            c = colonne + dc
+
+            self.grille_connue[l][c] = symboles[contenu] #met a jour la grille
+
+            if contenu == "mur":
+                print(f"Mur découvert en ({l}, {c})")
+
+        return perceptions
 
 
+    def avancer(self, direction):
+        """
+            args: 
+                direction de deplacement du robot O,S,N,E
 
+            return :
+                bool indiquant si le deplacement a pu etre effectue
 
+            what it does : 
+                effectue  le deplacement du robot dans la grille si il est possible et renvoit true, sinon pas
+                de deplacement et renvoit false.
+                
+        """
 
+        if direction not in self.DIRECTIONS:
+            raise ValueError("Direction inconnue")
 
+        dl, dc = self.DIRECTIONS[direction]
 
+        nouvelle_ligne = self.position[0] + dl
+        nouvelle_colonne = self.position[1] + dc
 
+        grille_reelle = self.carte.grille
 
+        # verif des limites
+        if not (0 <= nouvelle_ligne < len(grille_reelle)
+            and 0 <= nouvelle_colonne < len(grille_reelle[0])):
 
+            print("Déplacement impossible : hors de la grille")
+            return False
+
+        symbole = grille_reelle[nouvelle_ligne][nouvelle_colonne]
+
+        #on verifie que les cases sont des cases traversables
+        if symbole not in (".", "R"):
+            print(f"Obstacle inattendu en "f"({nouvelle_ligne}, {nouvelle_colonne})")
+            self.grille_connue[nouvelle_ligne][nouvelle_colonne] = "#"
+            return False
+
+        self.position = (nouvelle_ligne, nouvelle_colonne)#deplacement du robot
+
+        print(f"Déplacement {direction} : position {self.position}")
+
+        return True
+
+    def calculer_chemin(self, destinations)->list[tuple[int,int]]:
+        """
+        args: 
+            destination a laquelle le robot doit se rendre 
+
+        return : 
+            rien 
+
+        what it does :  
+            calcule un chemin entre la position du robot et la destination en se basant sur la grille perso du robot.
+           on suppose les cases inconnues sont libres
+        """
+
+        depart = self.position
+        destinations = {tuple(p) for p in destinations}
+
+        if depart in destinations:
+            return [depart]
+
+        hauteur = len(self.grille_connue)
+        largeur = len(self.grille_connue[0])
+
+        file = deque([depart])
+        predecesseurs:dict[tuple[int,int],tuple[int,int] | None] = {depart: None}
+
+        while file:
+            courant = file.popleft()
+
+            if courant in destinations:
+                chemin = []
+                case = courant
+
+                while case is not None:
+                    chemin.append(case)
+                    case = predecesseurs[case]
+
+                chemin.reverse()
+                return chemin
+
+            for dl, dc in self.DIRECTIONS.values():
+                l = courant[0] + dl
+                c = courant[1] + dc
+                voisin = (l, c)
+
+                if not (0 <= l < hauteur and 0 <= c < largeur):
+                    continue
+
+                if voisin in predecesseurs:
+                    continue
+
+                contenu = self.grille_connue[l][c]
+
+                # Une case inconnue est supposée libre.
+                # Les murs et les éléments ne sont pas traversables.
+                if contenu not in (None, "."):
+                    continue
+
+                predecesseurs[voisin] = courant
+                file.append(voisin)
+
+        return []
 
 
 
