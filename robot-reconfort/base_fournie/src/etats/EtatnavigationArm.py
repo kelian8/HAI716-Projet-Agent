@@ -12,4 +12,15 @@ class EtatNavigationArm(Etat):
         print("Le robot quitte l'état de navigation vers l'armoire.")
 
     def simulation_step(self):
-        pass#TODO
+        arrive=False
+        print("le robot se deplace vers l'armoire")
+        if not self.robot.est_adjacent(self.robot.armoire_pos): #verifie si le robot est sur une case adjacente
+                                                                                        #à l'armoire
+            arrive = self.robot.naviguer_vers(self.robot.armoire_pos)#fait la naviguation vers l'armoire 
+        else:
+            arrive=True
+
+
+        if arrive:
+            print("le robot est bien arrivé à l'armoire.")
+            self.robot.changer_etat("EtatFouiller")

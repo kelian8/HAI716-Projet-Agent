@@ -2,7 +2,6 @@ from Etat import Etat
 from Robot import *
 from Carte import *
 from reconfort_io import normaliser
-import re
 
 class EtatNavigationDico(Etat):
 
@@ -32,7 +31,7 @@ class EtatNavigationDico(Etat):
                 self.robot.changer_etat("EtatAttente")
             else :
                 print("Le robot a trouvé une correspondance dans le dictionnaire")
-                self.robot.changerEtat("EtatNavigationArm")
+                self.robot.changer_etat("EtatNavigationArm")
 
 
     def consulter(self): 
@@ -47,5 +46,10 @@ class EtatNavigationDico(Etat):
             cherche l'emotion/intensité correspondantes a la phrase de la demande qu'il dont il s'occupe actuellemment
             et met a jour l'attribut "emotion_intensite" du robot par l'emotion et l'intensité correspondante a la phrase
         """
-        mots = normaliser(self.robot.curent_demande["message"])
+        if self.robot.current_demande == None:
+            return None
+        mots = normaliser(self.robot.current_demande["message"])
+        for mot in mots:
+            if mot in self.robot.parent.dictionnaire:
+                return self.robot.parent.dictionnaire["message"]
         return None
