@@ -10,4 +10,4 @@ class EtatInit(Etat):
 
     def simulation_step(self):
         print("Mise en route du robot")
-        self.robot.changerEtat("EtatAttente")
+        self.robot.changer_etat("EtatAttente")
