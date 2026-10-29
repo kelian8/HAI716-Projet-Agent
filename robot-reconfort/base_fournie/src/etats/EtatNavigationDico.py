@@ -37,13 +37,12 @@ class EtatNavigationDico(Etat):
         print("Le robot quitte l'état de navigation vers le dico.")
 
     def simulation_step(self):
-        arrive=False
         print("le robot se deplace vers le dictionnaire")
         if not self.robot.est_adjacent(self.robot.dico_pos): #verifie si le robot est sur une case adjacente
                                                                                         #au dico
             if len(self.chemin) == 0 :
                 print("Aucun chemin connu vers le dictionnaire.")
-                raise ValueError("Dictionnaire innateignable")
+                raise ValueError("Dictionnaire inatteignable")
             print("Chemin calculé :", self.chemin)
 
             perceptions = self.robot.percevoir_voisins() #on recup les element des cases voisines
@@ -80,13 +79,17 @@ class EtatNavigationDico(Etat):
                 
 
         else:
-            arrive=True
-
-        if arrive:
             print("le robot est bien arrivé au dictionnaire.")
             self.robot.emotion_intensite = self.consulter()
             if self.robot.emotion_intensite == None :
                 print("Aucune émotion n'a pu être associée à la demande. Le robot passe à la demande suivante")
+                if self.robot.current_demande != None:
+                    self.robot.parent.trace.ajouter_livraison(
+                        self.robot.current_demande["numero"],
+                        self.robot.current_demande["resident"],
+                        None, None, None, "aucun", None, False, 
+                        "Pas de correspondance trouvée dans le dictionnaire"
+                    )
                 self.robot.changer_etat("EtatAttente")
             else :
                 print("Le robot a trouvé une correspondance dans le dictionnaire")
