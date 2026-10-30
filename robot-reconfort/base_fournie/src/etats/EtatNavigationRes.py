@@ -18,6 +18,7 @@ class EtatNavigationRes(Etat):
 
             #les cases adjacentes a la cible sont les destinations
             #on calcul la positions des cases adjacentes a la destinantion
+            self.destinations.clear()
         
             for dl, dc in self.robot.DIRECTIONS.values():
                 l = self.resident_pos[0] + dl
@@ -117,11 +118,12 @@ class EtatNavigationRes(Etat):
                     self.robot.current_demande["resident"],
                     emotion,
                     intensite,
-                    None,#TODO Changer
-                    "",#TODO changer
+                    self.robot.position_armoire,
+                    self.robot.repli,
                     self.robot.objet_tenu,
                     True
                 )
+                self.robot.objet_tenu = None
             self.robot.changer_etat("EtatAttente")
 
     def __str__(self):

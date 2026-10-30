@@ -50,6 +50,7 @@ class Robot:
         self.etat = None
         self.changer_etat("EtatInit")
         self.emotion_intensite = None
+        self.repli:str="aucun"
 
 
     def generer_grille_perso(self):

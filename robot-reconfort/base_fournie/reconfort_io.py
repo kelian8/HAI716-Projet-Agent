@@ -296,7 +296,7 @@ def charger_armoire(chemin: str | Path) -> Armoire:
             raise ErreurFormatJSON(f"Le casier ({casier["ligne"]},{casier["colonne"]}) n'a pas la bonne intensite : {intensite}. Il devrait être à la ligne {LIGNE_INTENSITE[intensite]}",chemin)
 
         #Casier en double (objet déjà ajouté à cette position)
-        if armoire.get_objet(casier["ligne"],casier["colonne"]) != -1:
+        if armoire.get_objet(casier["ligne"],casier["colonne"]) != None:
             raise ErreurFormatJSON(f"Le casier ({casier["ligne"]},{casier["colonne"]}) est en double")
         
         #Pas de problème détecté

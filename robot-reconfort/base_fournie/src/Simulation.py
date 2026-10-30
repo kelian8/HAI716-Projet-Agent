@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from etats import EtatFouiller
+
 from .Robot import Robot
 from Scenario import Scenario
 import reconfort_io as rio
@@ -73,8 +75,12 @@ class Simulation:
             print(f"Pas de simulation n°{self.pas}")
             print(f"Etat courant du robot : {self.robot.etat}")
             print("position du robot : " + str(self.robot.position))
-            print(f"Grille du robot :")
-            self.print_grille(self.robot.grille_connue)
+            if (isinstance(self.robot.etat,EtatFouiller)):
+                print("Armoire du robot : ")
+                self.print_armoire(self.robot.armoire_connue,self.robot.position_armoire)
+            else :
+                print("Grille du robot :")
+                self.print_grille(self.robot.grille_connue)
             print("==============================")
             entree = input("Appuyez sur entrée pour passer au pas suivant," \
             "ou bien écrivez 'q' pour arrêter la simulation et enregistrer la trace :")
@@ -92,4 +98,20 @@ class Simulation:
                     print("R",end="")
                 else : 
                     print(grille[row][col],end="")
+            print()
+
+    def print_armoire(self, armoire:dict[tuple[int,int],str],pos:tuple[int,int]):
+        for row in range(3):
+            for col in range(8):
+                if (row,col) == pos :
+                    print("[",end="")
+                if (row,col) in armoire:
+                    if armoire[(row,col)] == None:
+                        print("Vide",end="")
+                    else :
+                        print(armoire[(row,col)],end="")
+                else :
+                    print("Vide",end="")
+                if (row,col) == pos :
+                    print("]",end="")
             print()

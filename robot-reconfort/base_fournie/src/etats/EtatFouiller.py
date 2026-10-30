@@ -21,7 +21,18 @@ class EtatFouiller(Etat):
         #cas ou tous les candidats ont été parcouru 
         if self.indice_candidat >= len(self.candidats):
             print("Aucun objet disponible dans les casiers candidats.")
-            # TODO : gérer l'absence d'objet
+            if (self.robot.current_demande != None and self.robot.emotion_intensite != None):
+                self.robot.parent.trace.ajouter_livraison(
+                    self.robot.current_demande["numero"],
+                    self.robot.current_demande["resident"],
+                    self.robot.emotion_intensite[0],
+                    self.robot.emotion_intensite[1],
+                    None,
+                    "aucun",
+                    None,
+                    False,
+                    "Aucun objet ne correspond à la demande"
+                )
             return
 
         cible = self.candidats[self.indice_candidat]
@@ -58,8 +69,16 @@ class EtatFouiller(Etat):
 
         #quand le bon a été trouvé, on le prend et on passe a l'etat suivant
         if self.robot.prendre():
+            if self.indice_candidat == 0:
+                self.robot.repli = "aucun"
+            elif 0 <self.indice_candidat < 3:
+                self.robot.repli = "intensite"
+            elif 3 <= self.indice_candidat < 9:
+                self.robot.repli = "voisine_1"
+            else :
+                self.robot.repli = "voisine_2"
             print("Objet récupéré, fin de la fouille.")
-            self.robot.changer_etat("EtatNavigationResident")
+            self.robot.changer_etat("EtatNavigationRes")
 
 
 
@@ -79,7 +98,8 @@ class EtatFouiller(Etat):
         what it does : 
             determine une liste d'emotions candidate pour la recherche dans le casier classées par ordre de correspondance
         """
-        emotion_demandee, intensite_demandee = self.robot.emotion_intensite
+        if self.robot.emotion_intensite != None:
+            emotion_demandee, intensite_demandee = self.robot.emotion_intensite
 
         colonne_demandee = EMOTIONS_ORDRE.index(emotion_demandee)
         ligne_demandee = INTENSITES_ORDRE.index(intensite_demandee)
