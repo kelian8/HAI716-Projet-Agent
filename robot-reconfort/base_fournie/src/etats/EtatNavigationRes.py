@@ -75,6 +75,7 @@ class EtatNavigationRes(Etat):
             self.robot.mettre_a_jour_grille_connue(perceptions) #decouverte des cases autour du robot
 
             prochaine_case = self.chemin[1]
+            self.chemin.pop(0)
 
             dl = prochaine_case[0] - self.robot.position[0]
             dc = prochaine_case[1] - self.robot.position[1]

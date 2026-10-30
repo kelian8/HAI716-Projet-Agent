@@ -47,9 +47,7 @@ class EtatNavigationDico(Etat):
             self.robot.mettre_a_jour_grille_connue(perceptions) #decouverte des cases autour du robot
 
             prochaine_case = self.chemin[1]
-            print("case actuelle : " + str(self.robot.position))
-            print("chemin : " + str(self.chemin))
-            print("prochaine case : " + str(prochaine_case))
+            self.chemin.pop(0)
 
             dl = prochaine_case[0] - self.robot.position[0]
             dc = prochaine_case[1] - self.robot.position[1]
@@ -78,7 +76,7 @@ class EtatNavigationDico(Etat):
                 print("Recalcul du chemin apres l'obstacle...")
                 self.chemin = self.robot.calculer_chemin(self.destinations)
 
-            self.chemin.pop(0)
+            
                 
 
         else:
