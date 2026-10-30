@@ -1,9 +1,11 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from Robot import Robot
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from Robot import Robot
 
 class Etat(ABC):
-
 
     def __init__(self,robot:Robot):
         self.robot = robot

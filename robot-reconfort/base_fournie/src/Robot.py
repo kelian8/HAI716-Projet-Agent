@@ -1,9 +1,13 @@
-from Carte import *
+from __future__ import annotations
+from Carte import Carte
 from collections import deque
 from Exceptions import ErreurEtat
-from Simulation import Simulation
 from etats import creer_etats
-from etats.Etat import Etat
+from etats.etat import Etat
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from Simulation import Simulation 
 
 class Robot:
 

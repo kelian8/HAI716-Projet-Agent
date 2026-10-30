@@ -1,6 +1,4 @@
-from Etat import Etat
-from Robot import *
-from Carte import *
+from .etat import Etat
 from reconfort_io import normaliser
 
 class EtatNavigationDico(Etat):

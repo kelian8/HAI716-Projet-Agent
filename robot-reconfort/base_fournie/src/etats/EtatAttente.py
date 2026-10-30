@@ -1,4 +1,4 @@
-from Etat import Etat
+from .etat import Etat
 
 class EtatAttente(Etat):
 

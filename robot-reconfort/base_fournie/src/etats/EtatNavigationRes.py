@@ -1,5 +1,4 @@
-from Etat import Etat
-from Robot import *
+from .etat import Etat
 
 class EtatNavigationRes(Etat):
 

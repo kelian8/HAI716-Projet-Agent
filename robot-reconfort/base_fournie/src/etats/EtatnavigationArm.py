@@ -1,5 +1,4 @@
-from Etat import Etat
-from Robot import *
+from .etat import Etat
 
 class EtatNavigationArm(Etat):
 
@@ -35,7 +34,6 @@ class EtatNavigationArm(Etat):
         print("Le robot quitte l'état de navigation vers l'armoire.")
 
     def simulation_step(self):
-        arrive=False
         print("le robot se deplace vers l'armoire")
         if not self.robot.est_adjacent(self.robot.armoire_pos): #verifie si le robot est sur une case adjacente
                                                                                         #à l'armoire
@@ -78,8 +76,5 @@ class EtatNavigationArm(Etat):
                 
 
         else:
-            arrive=True
-
-        if arrive:
             print("le robot est bien arrivé à l'armoire.")
             self.robot.changer_etat("EtatFouiller")
