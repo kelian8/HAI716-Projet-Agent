@@ -1,67 +1,53 @@
-# Base fournie : projet « Robot de réconfort »
+# Robot de réconfort — BAEZA & HOURMAND
 
-Ce dossier contient le strict minimum pour démarrer : de quoi **lire les
-entrées** et **écrire la sortie**. Tout le reste (perception, carte mentale,
-planification, consultation du dictionnaire, fouille de l'armoire, boucle de
-décision) est le sujet du projet.
+Projet de semestre, master informatique. Un robot à perception locale
+consulte un dictionnaire, fouille une armoire et rapporte un objet à un
+résident.
 
-## Contenu
+Langage : **Python** — Version : **3.10+**
+
+## Lancer
+
+Pour lancer le projet se placer dans le dossier **base_fournie** puis exécuter la comande suivante :
+```
+**python Projet.py** <scenario.json> <dossier_donnees> <trace_sortie.json>
+```
+La carte **n'est plus** à renseigner puisqu'elle est trouvable directement dans le fichier de scénario
+
+Exemple :
 
 ```
-reconfort_io.py                 lecture des 4 fichiers, écriture de la trace
-demo.py                         exemple d'utilisation ; ne résout rien
-rendu.json                      modèle à compléter (noms, commande, vidéo)
-MODELE_README.md                squelette du README de votre dépôt
-donnees/dictionnaire.json       250 formes -> (émotion, intensité)
-donnees/armoire_standard.json   24 casiers : 8 émotions x 3 intensités
-cartes/appartement_01..05.json  cinq appartements
-cartes/scenario_01..05.json     le scénario associé à chacun
+python Projet.py cartes/scenario_01.json donnees sortie.json
 ```
 
-## Démarrer
+Dépendances : **pytest**, installation : python -m pip install pytest
 
+## Tester
+
+Commande de test : 
 ```
-cd base_fournie
-python demo.py cartes/appartement_01.json cartes/scenario_01.json donnees sortie.json
+python -m pytest -v
 ```
 
-La démo charge les quatre fichiers, affiche un résumé, découpe chaque
-message en mots, et écrit une trace où toutes les demandes échouent. C'est
-le squelette : à vous de le remplir.
+Ces tests ne couvrent pour l'instant que des erreurs lors de la désérialisation d'une carte
+Pour l'instant il n'y a pas de tests pour la désérialisation des autres formats de json, parce que c'est exactement le même principe et c'est pas ce qui est intéressant dans le projet.
 
-Les quatre arguments sont exactement ceux du contrat d'appel de l'énoncé
-(section 2) : carte, scénario, dossier de données, trace à écrire. Votre
-programme devra les accepter dans le même ordre, et vous déclarerez la
-commande qui le lance dans `rendu.json`.
+## Organisation du code
 
-## Ce que `reconfort_io.py` fait, et ne fait pas
+| Fichier | Rôle |
+|---|---|
+| `Projet.py` | point d'entrée, lancement de la simulation|
+| `Simulation.py` | simulation générale, possède la carte, l'armoire, le dictionnaire, le(s) robot(s) (lors de la suite du projet) |
+| `Robot.py` | Agent, possède une mémoire (ses attributs), observe son environnement (avec des appels à la simulation), prend des décisions (implémenté comme une machine à état) |
+| `…` | … |
 
-**Fait** : ouvrir les fichiers, signaler proprement un fichier absent, mal
-encodé ou syntaxiquement invalide, vérifier les champs `format` et
-`version`, accumuler les pas et les livraisons, écrire la trace au bon
-format.
+## État
 
-**Ne fait pas** : toutes les autres validations de la section 5.6 de
-l'énoncé (grille rectangulaire, positions dans les bornes, résident sur un
-mur, casier hors de l'armoire, résident inconnu…). Elles sont notées, et
-elles sont à vous.
+**Ce qui marche.** *À compléter.*
 
-Ne contient évidemment ni `plus_court_chemin`, ni `lire_emotion`, ni
-`choisir_casier`. Ne les cherchez pas.
+**Ce qui ne marche pas.** *À compléter — soyez honnêtes, c'est noté en
+votre faveur.*
 
-## Cinq cartes, ce n'est pas assez
+## Vidéo
 
-La correction utilise en plus des jeux que vous n'avez pas. Fabriquez-vous
-d'autres cartes : c'est un exercice utile en soi, et c'est le seul moyen de
-savoir si votre robot marche vraiment.
-
-## Deux rappels
-
-Votre agent n'a le droit de lire ni le champ `grille` de la carte, ni le
-champ `objet` des casiers. Il découvre les murs case par case à travers ses
-perceptions, et le contenu des casiers en se plaçant devant. Voir les
-sections 3.2 et 3.3 de l'énoncé : c'est vérifié à la correction.
-
-Si l'algorithmique des graphes ne vous est pas familière, lisez l'annexe B
-de l'énoncé avant d'écrire quoi que ce soit : elle contient tout le
-nécessaire.
+`demo.mp4` (ou le lien), également déclarée dans `rendu.json`.
