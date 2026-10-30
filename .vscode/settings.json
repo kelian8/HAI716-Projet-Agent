@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
         "./robot-reconfort/base_fournie/src"
-    ]
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }

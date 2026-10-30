@@ -46,7 +46,22 @@ def test_carte_valide():
     assert carte.depart_robot == (6, 1)
     assert carte.armoire_pos == (6, 4)
     assert carte.dico_pos == (7, 6)
-    assert carte.residents == {"R1": ("Camille", (6, 11)), "R2": ("Hugo", (3, 3))}
+    assert carte.residents == [{
+      "id": "R1",
+      "nom": "Camille",
+      "position": [
+        6,
+        11
+      ]
+    },
+    {
+      "id": "R2",
+      "nom": "Hugo",
+      "position": [
+        3,
+        3
+      ]
+    }]
 
 
 @pytest.mark.parametrize("fichier, message", CAS_INVALIDES)
@@ -56,7 +71,7 @@ def test_carte_invalide(fichier, message):
         charger_carte(DOSSIER / fichier)
 
 
-# --- Cas gérés par _lire_json (adapte les regex à tes vrais messages) ---
+# --- Cas gérés par _lire_json ---
 
 def test_fichier_absent(tmp_path):
     with pytest.raises(ErreurFichier):
