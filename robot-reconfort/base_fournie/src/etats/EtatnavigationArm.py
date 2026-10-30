@@ -79,3 +79,8 @@ class EtatNavigationArm(Etat):
         else:
             print("le robot est bien arrivé à l'armoire.")
             self.robot.changer_etat("EtatFouiller")
+
+    def __str__(self):
+            return "Etat Navigation vers l'armoire"
+
+    

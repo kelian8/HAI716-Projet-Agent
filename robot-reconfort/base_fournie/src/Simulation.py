@@ -4,6 +4,12 @@ from .Robot import Robot
 from Scenario import Scenario
 import reconfort_io as rio
 
+import os
+
+def effacer_ecran() -> None:
+    """Efface le contenu du terminal."""
+    os.system("cls" if os.name == "nt" else "clear")
+
 
 class Simulation:
 
@@ -62,20 +68,28 @@ class Simulation:
     def simulation(self):
         running = True
         while(running):
+            effacer_ecran()
             self.robot.simulation_step()
             print(f"Pas de simulation n°{self.pas}")
             print(f"Etat courant du robot : {self.robot.etat}")
+            print("position du robot : " + str(self.robot.position))
             print(f"Grille du robot :")
             self.print_grille(self.robot.grille_connue)
             print("==============================")
             entree = input("Appuyez sur entrée pour passer au pas suivant," \
-            "bien écrivez 'q' pour arrêter la simulation et enregistrer la trace")
+            "ou bien écrivez 'q' pour arrêter la simulation et enregistrer la trace :")
             if entree.strip().lower() == 'q':
                 running = False
             self.pas += 1
+            
 
         self.trace.ecrire(self.chemin_trace)
 
     def print_grille(self, grille:list[list[str]]):
-        for row in grille:
-            print(row)
+        for row in range(len(grille)):
+            for col in range(len(grille[row])):
+                if (row,col) == self.robot.position:
+                    print("R",end="")
+                else : 
+                    print(grille[row][col],end="")
+            print()

@@ -27,6 +27,7 @@ class EtatAttente(Etat):
                 self.robot.position_armoire,
                 "ATTENDRE",
             )
+            print(f"Demande reçu : n° {self.demande["numero"]}, résident : {self.demande["resident"]}, message : {self.demande["message"]}" )
             self.robot.changer_etat("EtatNavigationDico")
         else :
             self.robot.parent.trace.ajouter_pas(
@@ -35,6 +36,9 @@ class EtatAttente(Etat):
                 self.robot.position_armoire(),
                 "ATTENDRE",
             )
+
+    def __str__(self):
+        return "Etat Attente"
 
 
 

@@ -123,3 +123,6 @@ class EtatNavigationRes(Etat):
                     True
                 )
             self.robot.changer_etat("EtatAttente")
+
+    def __str__(self):
+            return "Etat Navigation vers l'armoire"

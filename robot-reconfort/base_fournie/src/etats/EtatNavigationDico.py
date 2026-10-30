@@ -116,6 +116,9 @@ class EtatNavigationDico(Etat):
             if mot in self.robot.parent.dictionnaire:
                 return self.robot.parent.dictionnaire[mot]
         return None
+
+    def __str__(self):
+            return "Etat Navigation vers le dictionnaire"
             
 
 
