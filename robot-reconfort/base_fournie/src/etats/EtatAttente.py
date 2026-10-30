@@ -33,7 +33,7 @@ class EtatAttente(Etat):
             self.robot.parent.trace.ajouter_pas(
                 -1,
                 self.robot.position,
-                self.robot.position_armoire(),
+                self.robot.position_armoire,
                 "ATTENDRE",
             )
 

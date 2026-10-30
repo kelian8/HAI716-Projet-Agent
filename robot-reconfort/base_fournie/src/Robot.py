@@ -424,14 +424,15 @@ class Robot:
 
         #on enregistre l'action dans la trace
         # puis on transmet bien l'ancienne position du sélecteur avant le deplacement
-        self.parent.trace.ajouter_pas(
-            self.current_demande,
-            self.position,
-            ancienne_position,
-            "CHERCHER",
-            argument=direction,
-            contenu_casier=objet
-        )
+        if self.current_demande != None:
+            self.parent.trace.ajouter_pas(
+                self.current_demande["numero"],
+                self.position,
+                ancienne_position,
+                "CHERCHER",
+                argument=direction,
+                contenu_casier=objet
+            )
 
         #on met a jour la position et la mémoire du robot
         self.position_armoire = nouvelle_position
