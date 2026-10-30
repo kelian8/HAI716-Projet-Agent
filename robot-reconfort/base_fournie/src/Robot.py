@@ -381,6 +381,65 @@ class Robot:
         return []
 
 
+############################fonctions pour la recherche d'objet dans l'armoire######################################
+
+
+    def chercher(self, direction):
+        """
+        args:
+            la direction dans laquelle on deplace le selcteur 
+        
+        return: 
+            bool indiquant si le deplacement est possible
+
+        what it does:
+            deplace le selecteur dans l'armoire si cela est possible 
+            et met a jour la memoire du robot
+        """
+
+        if direction not in self.DIRECTIONS:
+            raise ValueError("Direction inconnue")
+
+        #position du selecteur avant l'action
+        ancienne_position = self.position_armoire
+        ligne, colonne = ancienne_position
+
+        dl, dc = self.DIRECTIONS[direction]
+
+        nouvelle_ligne = ligne + dl
+        nouvelle_colonne = colonne + dc
+
+        #les lignes ne bouclent pas comme les emotions donc on verifie
+        if not (0 <= nouvelle_ligne < 3):
+            print("Déplacement impossible : hors de l'armoire")
+            return False
+
+        # les colonnes, quant a elles, bouclent donc on fait un modulo 8 (car 8 emotions)
+        nouvelle_colonne = nouvelle_colonne % 8
+
+        nouvelle_position = (nouvelle_ligne, nouvelle_colonne)
+
+        #on regarde dans le casier atteint
+        objet = self.parent.get_armoire().get_objet(nouvelle_ligne, nouvelle_colonne)
+
+        #on enregistre l'action dans la trace
+        # puis on transmet bien l'ancienne position du sélecteur avant le deplacement
+        self.parent.trace.ajouter_pas(
+            self.current_demande,
+            self.position,
+            ancienne_position,
+            "CHERCHER",
+            argument=direction,
+            contenu_casier=objet
+        )
+
+        #on met a jour la position et la mémoire du robot
+        self.position_armoire = nouvelle_position
+        self.armoire_connue[nouvelle_position] = objet
+
+        return True
+
+
 
 ########################################################################
 #toutes ces fonctions iront dans chaque classe de "état" correspondantes, 
