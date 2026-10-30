@@ -8,7 +8,7 @@ import reconfort_io as rio
 def main() -> None:
     """Point d'entrée : lit les arguments et lance la simulation."""
     if len(sys.argv) != 4:
-        print("Usage : python Projet.py <carte> <scenario> <dossier_donnees> <trace>")
+        print("Usage : python Projet.py <scenario> <dossier_donnees> <trace>")
         sys.exit(1)
 
     #chemin_carte = sys.argv[1] On enlève l'entrée de la carte : elle est dans le scenario
@@ -18,7 +18,7 @@ def main() -> None:
     chemin_trace = sys.argv[3]
 
     scenario = rio.charger_scenario(chemin_scenario,dossier_donnees)
-    dictionnaire = rio.charger_dictionnaire(dossier_donnees)
+    dictionnaire = rio.charger_dictionnaire(Path(dossier_donnees) / "dictionnaire.json")
 
     simulation = Simulation(scenario,dictionnaire,chemin_trace)
     simulation.simulation()

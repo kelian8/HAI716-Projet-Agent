@@ -8,12 +8,12 @@ import reconfort_io as rio
 class Simulation:
 
     def __init__(self, scenario, dictionnaire:dict[str,tuple[str,str]],chemin_trace:str|Path):
-        self.robot = Robot(self)
         self.scenario:Scenario = scenario
         self.dictionnaire = dictionnaire
         self.trace = rio.Trace(self.scenario.nom_carte,self.scenario.nom,("BAEZA kelian", "HOURMAND Théo"))
         self.chemin_trace = chemin_trace
         self.pas:int = 0
+        self.robot = Robot(self)
 
     def get_dico(self):
         return self.dictionnaire
@@ -66,7 +66,7 @@ class Simulation:
             print(f"Pas de simulation n°{self.pas}")
             print(f"Etat courant du robot : {self.robot.etat}")
             print(f"Grille du robot :")
-            print(self.robot.grille_connue)
+            self.print_grille(self.robot.grille_connue)
             print("==============================")
             entree = input("Appuyez sur entrée pour passer au pas suivant," \
             "bien écrivez 'q' pour arrêter la simulation et enregistrer la trace")
@@ -75,3 +75,7 @@ class Simulation:
             self.pas += 1
 
         self.trace.ecrire(self.chemin_trace)
+
+    def print_grille(self, grille:list[list[str]]):
+        for row in grille:
+            print(row)

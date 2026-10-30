@@ -37,7 +37,7 @@ class Robot:
         self.parent = parent
 
         self.position = parent.get_robot_depart()
-        self.position_armoire = parent.get_casier_depart()
+        self.position_armoire = parent.get_casier_depart() #ca c'est la position du sélecteur dans l'armoire mdr
         self.grille_connue = self.generer_grille_perso()
         #la carte donnée au robot lors de son initialisation dans "simulation", est une carte creer par simulation dont la grille a été remplacxe par une gerille
         #"vierge" a l'execption des residents, l'armoire, et le dico 
@@ -297,16 +297,14 @@ class Robot:
         nouvelle_ligne = self.position[0] + dl
         nouvelle_colonne = self.position[1] + dc
 
-        grille_reelle = self.carte.grille
-
         # verif des limites
-        if not (0 <= nouvelle_ligne < len(grille_reelle)
-            and 0 <= nouvelle_colonne < len(grille_reelle[0])):
+        if not (0 <= nouvelle_ligne < self.parent.get_carte_size()[0]
+            and 0 <= nouvelle_colonne < self.parent.get_carte_size()[1]):
 
             print("Déplacement impossible : hors de la grille")
             return False
 
-        symbole = grille_reelle[nouvelle_ligne][nouvelle_colonne]
+        symbole = self.parent.get_symbole(nouvelle_ligne,nouvelle_colonne)
 
         #on verifie que les cases sont des cases traversables
         if symbole not in (".", "R"):

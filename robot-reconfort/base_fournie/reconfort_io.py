@@ -218,7 +218,7 @@ def charger_carte(chemin: str | Path) -> Carte:
         depart_robot = depart_robot,
         armoire_pos = armoire_pos,
         dico_pos = dico_pos,
-        residents = residents
+        residents = values["residents"]
     )
 
 def charger_dictionnaire(chemin: str | Path) -> Dict[str, tuple[str,str]]:

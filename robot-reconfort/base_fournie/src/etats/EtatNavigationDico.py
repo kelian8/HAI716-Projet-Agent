@@ -47,6 +47,9 @@ class EtatNavigationDico(Etat):
             self.robot.mettre_a_jour_grille_connue(perceptions) #decouverte des cases autour du robot
 
             prochaine_case = self.chemin[1]
+            print("case actuelle : " + str(self.robot.position))
+            print("chemin : " + str(self.chemin))
+            print("prochaine case : " + str(prochaine_case))
 
             dl = prochaine_case[0] - self.robot.position[0]
             dc = prochaine_case[1] - self.robot.position[1]
@@ -74,6 +77,8 @@ class EtatNavigationDico(Etat):
             if not self.robot.avancer(direction):
                 print("Recalcul du chemin apres l'obstacle...")
                 self.chemin = self.robot.calculer_chemin(self.destinations)
+
+            self.chemin.pop(0)
                 
 
         else:
@@ -111,7 +116,7 @@ class EtatNavigationDico(Etat):
         mots = normaliser(self.robot.current_demande["message"])
         for mot in mots:
             if mot in self.robot.parent.dictionnaire:
-                return self.robot.parent.dictionnaire["message"]
+                return self.robot.parent.dictionnaire[mot]
         return None
             
 

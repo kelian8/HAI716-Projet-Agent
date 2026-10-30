@@ -9,12 +9,19 @@ class EtatNavigationRes(Etat):
     
     def enter(self):
             print("Le robot commence à se déplacer vers le résident.")
+            if self.robot.current_demande != None:
+                self.resident_pos = self.robot.parent.get_carte().get_position("resident",self.robot.current_demande["resident"])
+            else : 
+                print("Aucune demande")
+                self.robot.changer_etat("Attente")
+
+
             #les cases adjacentes a la cible sont les destinations
             #on calcul la positions des cases adjacentes a la destinantion
         
             for dl, dc in self.robot.DIRECTIONS.values():
-                l = self.robot.armoire_pos[0] + dl
-                c = self.robot.armoire_pos[1] + dc
+                l = self.resident_pos[0] + dl
+                c = self.resident_pos[1] + dc
     
                 if not (
                     0 <= l < len(self.robot.grille_connue)
@@ -29,11 +36,7 @@ class EtatNavigationRes(Etat):
     
             #calcul de l'itineraire a partir de la grille perso du robot.
             self.chemin = self.robot.calculer_chemin(self.destinations)
-            if self.robot.current_demande != None:
-                self.resident_pos = self.robot.parent.get_carte().get_position("resident",self.robot.current_demande["resident"])
-            else : 
-                print("Aucune demande")
-                self.robot.changer_etat("Attente")
+            
     
     
     def exit(self):
