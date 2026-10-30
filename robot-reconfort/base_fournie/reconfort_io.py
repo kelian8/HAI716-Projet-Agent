@@ -307,7 +307,7 @@ def charger_armoire(chemin: str | Path) -> Armoire:
             raise ErreurFormatJSON("Armoire mal remplie")
     return armoire
 
-def charger_scenario(chemin: str | Path) -> Scenario:
+def charger_scenario(chemin: str | Path, dossier_donnees :str|Path) -> Scenario:
     """Charge un fichier scenario. Voir l'enonce, section 5.4.
     Args :
         chemin : Chemin du fichier JSON à charger
@@ -323,13 +323,17 @@ def charger_scenario(chemin: str | Path) -> Scenario:
     if "nom" not in values:
         raise ErreurFormatJSON("Scenario mal formatté", chemin)
 
+    if "carte" not in values:
+        raise ErreurFormatJSON("Nom de carte introuvable dans le fichier scenario",chemin)
     # La carte est désérialisée à partir de son propre fichier,
     # construit à partir du nom donné dans le scénario
     chemin_carte = "cartes/" + values["carte"] + ".json"
     carte:Carte = charger_carte(chemin_carte)
 
     # Idem pour l'armoire
-    chemin_armoire = "donnees/" + values["armoire"] + ".json"
+    if "armoire" not in values:
+        raise ErreurFormatJSON("Armoire introuvable dans le fichier scenario",chemin)
+    chemin_armoire = Path(dossier_donnees) / f"{values['armoire']}.json"
     armoire = charger_armoire(chemin_armoire)
    
     #TODO vérifier que les positions du robot, de l'armoire, du dictionnaire et des résidents ne sont pas sur des murs

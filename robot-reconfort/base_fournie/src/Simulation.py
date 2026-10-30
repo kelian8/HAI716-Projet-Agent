@@ -1,15 +1,19 @@
-from Robot import Robot
+from pathlib import Path
+
+from .Robot import Robot
 from Scenario import Scenario
 import reconfort_io as rio
 
 
 class Simulation:
 
-    def __init__(self, scenario, dictionnaire:dict[str,tuple[str,str]]):
+    def __init__(self, scenario, dictionnaire:dict[str,tuple[str,str]],chemin_trace:str|Path):
         self.robot = Robot(self)
         self.scenario:Scenario = scenario
         self.dictionnaire = dictionnaire
         self.trace = rio.Trace(self.scenario.nom_carte,self.scenario.nom,("BAEZA kelian", "HOURMAND Théo"))
+        self.chemin_trace = chemin_trace
+        self.pas:int = 0
 
     def get_dico(self):
         return self.dictionnaire
@@ -56,5 +60,18 @@ class Simulation:
 
 
     def simulation(self):
-        while(1):
+        running = True
+        while(running):
             self.robot.simulation_step()
+            print(f"Pas de simulation n°{self.pas}")
+            print(f"Etat courant du robot : {self.robot.etat}")
+            print(f"Grille du robot :")
+            print(self.robot.grille_connue)
+            print("==============================")
+            entree = input("Appuyez sur entrée pour passer au pas suivant," \
+            "bien écrivez 'q' pour arrêter la simulation et enregistrer la trace")
+            if entree.strip().lower() == 'q':
+                running = False
+            self.pas += 1
+
+        self.trace.ecrire(self.chemin_trace)
