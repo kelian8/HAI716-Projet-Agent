@@ -441,6 +441,88 @@ class Robot:
         return True
 
 
+    def prendre(self):
+        """
+        args:
+            rien
+        return : 
+            bool indiquant si l'objet a pu etre attrapé par le robot
+
+        what it does:
+            prends l'objet du casier courant s'il nest pas vide, met a jour l'armoire et la memoire du robot 
+        """
+
+        position = self.position_armoire
+        ligne, colonne = position
+
+        #on verifie que le robot ne tient pas deja un objet
+        if self.objet_tenu is not None:
+            print("Le robot tient déjà un objet.")
+            return False
+
+        #on verifie que le contenu du casier est connu
+        if position not in self.armoire_connue:
+            print("Le contenu de ce casier n'est pas connu.")
+            return False
+
+        objet = self.armoire_connue[position]
+
+        # on verifie que le casier n'est pas vide
+        if objet is None:
+            print("Ce casier est vide.")
+            return False
+
+        # on fait la trace de l'action avant de modifier le contenu de l'armoire
+        if self.current_demande is not None:
+            self.parent.trace.ajouter_pas(
+                self.current_demande["numero"],
+                self.position,
+                position,
+                "PRENDRE",
+                argument=objet,
+                contenu_casier=objet
+            )
+
+        #le robot prend l'objet
+        self.objet_tenu = objet
+
+        #le casier devient vide dans l'armoire réelle
+        self.parent.get_armoire().add_objet(ligne, colonne, None)
+
+        # et on met a jour la memoire de l'armoire du robot
+        self.armoire_connue[position] = None
+
+        print(f"Le robot a pris : {objet}")
+
+        return True
+
+
+    def observer_casier(self):
+        """
+        args :
+            rien
+        return :
+            objet contenu dans un casier
+        what it does :
+            observe le contenu d'un casier, mais sert surtout a regler le probleme si le casier cible est le casier 
+            sur lequel le selecteur est initialement postionné        
+        """
+        ligne, colonne = self.position_armoire
+        objet = self.parent.get_armoire().get_objet(ligne, colonne)
+
+        self.armoire_connue[self.position_armoire] = objet
+
+    #on oublie pas de faire la trace quand meme
+        if self.current_demande is not None:
+            self.parent.trace.ajouter_pas(
+                self.current_demande["numero"],
+                self.position,
+                self.position_armoire,
+                "OBSERVER",
+                contenu_casier=objet
+            )
+
+        return objet
 
 ########################################################################
 #toutes ces fonctions iront dans chaque classe de "état" correspondantes, 
