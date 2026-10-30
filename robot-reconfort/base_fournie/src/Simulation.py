@@ -77,7 +77,7 @@ class Simulation:
             print("position du robot : " + str(self.robot.position))
             if (isinstance(self.robot.etat,EtatFouiller)):
                 print("Armoire du robot : ")
-                self.print_armoire(self.robot.armoire_connue,self.robot.position_armoire)
+                self.print_armoire_vibe_code(self.robot.armoire_connue,self.robot.position_armoire)
             else :
                 print("Grille du robot :")
                 self.print_grille(self.robot.grille_connue)
@@ -115,3 +115,28 @@ class Simulation:
                 if (row,col) == pos :
                     print("]",end="")
             print()
+
+    def print_armoire_vibe_code(self, armoire: dict[tuple[int, int], str | None],
+                  pos: tuple[int, int]) -> None:
+        """Affiche l'armoire (3 lignes x 8 colonnes) en colonnes alignées.
+
+        Args:
+            armoire: Associe (ligne, colonne) à l'objet contenu (None ou absent = vide).
+            pos: Casier courant du robot, affiché entre crochets.
+        """
+        NB_LIGNES, NB_COLONNES = 3, 8
+
+        # 1. Texte de chaque cellule
+        def texte(row: int, col: int) -> str:
+            objet = armoire.get((row, col)) or "Vide"   # None ou absent -> "Vide"
+            return f"[{objet}]" if (row, col) == pos else objet
+
+        cellules = [[texte(r, c) for c in range(NB_COLONNES)] for r in range(NB_LIGNES)]
+
+        # 2. Largeur de chaque colonne = texte le plus long de la colonne
+        largeurs = [max(len(cellules[r][c]) for r in range(NB_LIGNES))
+                    for c in range(NB_COLONNES)]
+
+        # 3. Affichage
+        for ligne in cellules:
+            print(" | ".join(f"{cell:<{largeurs[c]}}" for c, cell in enumerate(ligne)))
