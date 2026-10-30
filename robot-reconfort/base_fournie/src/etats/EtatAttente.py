@@ -2,7 +2,10 @@ from .etat import Etat
 
 class EtatAttente(Etat):
 
-    demande: dict
+    def __init__(self, robot):
+        super().__init__(robot)
+        self.demande: dict | None = None
+
     def enter(self):
         print("Le robot entre en état d'attente.")
 
@@ -15,19 +18,19 @@ class EtatAttente(Etat):
         #while self.robot.current_demande == None :
         #    print("en attente d'une demande")
         #Selon moi on ne met pas de while parce que sinon ça prend le dessus sur la simulation
-        demande = self.robot.parent.get_next_demande()
+        self.demande = self.robot.parent.get_next_demande()
         
-        if (demande != None):
+        if (self.demande != None):
             self.robot.parent.trace.ajouter_pas(
                 self.demande["numero"],
                 self.robot.position,
-                self.robot.position_armoire(),
+                self.robot.position_armoire,
                 "ATTENDRE",
             )
             self.robot.changer_etat("EtatNavigationDico")
         else :
             self.robot.parent.trace.ajouter_pas(
-                self.demande["numero"],
+                -1,
                 self.robot.position,
                 self.robot.position_armoire(),
                 "ATTENDRE",
