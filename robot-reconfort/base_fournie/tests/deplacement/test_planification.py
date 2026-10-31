@@ -37,3 +37,18 @@ def test_chemin_avec_un_obstacle():
         assert abs(l1 - l2) + abs(c1 - c2) == 1
 
 
+def test_destination_inaccessible():
+    robot = Robot.__new__(Robot)
+
+    #grille avec resident enmuré
+    robot.position = (1, 0)
+    robot.grille_connue = [
+        ["#", "#", "#", "#"],
+        [".", ".", "P", "#"],
+        ["#", "#", "#", "#"]
+    ]
+
+    chemin = robot.calculer_chemin([(1, 2)])
+
+    #on verifie que le chemin renvoyé est une liste vide = pas de chemin 
+    assert chemin == []
