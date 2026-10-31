@@ -1,5 +1,6 @@
 from .etat import Etat
 
+
 class EtatNavigationArm(Etat):
 
     destinations:list[tuple[int,int]] = []
